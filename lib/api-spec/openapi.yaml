@@ -3,20 +3,32 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Songtai Life Partners Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: partners
+    description: Partner management
+  - name: products
+    description: Product catalog
+  - name: testimonials
+    description: Testimonials
+  - name: gallery
+    description: Photo gallery
+  - name: faq
+    description: Frequently asked questions
+  - name: about
+    description: About / Our Story content
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +36,602 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Partners ────────────────────────────────────────────────────────────────
+
+  /partners:
+    get:
+      operationId: listPartners
+      tags: [partners]
+      summary: List all partners (admin)
+      responses:
+        "200":
+          description: List of partners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Partner"
+    post:
+      operationId: createPartner
+      tags: [partners]
+      summary: Create a new partner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerInput"
+      responses:
+        "201":
+          description: Created partner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Slug already taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /partners/stats:
+    get:
+      operationId: getPartnerStats
+      tags: [partners]
+      summary: Partner dashboard statistics
+      responses:
+        "200":
+          description: Aggregated partner stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerStats"
+
+  /partners/{slug}:
+    get:
+      operationId: getPartnerBySlug
+      tags: [partners]
+      summary: Resolve a partner by slug (public)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Active partner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "404":
+          description: Not found or not active
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /partners/{id}/status:
+    patch:
+      operationId: updatePartnerStatus
+      tags: [partners]
+      summary: Approve or suspend a partner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerStatusUpdate"
+      responses:
+        "200":
+          description: Updated partner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /partners/{id}:
+    patch:
+      operationId: updatePartner
+      tags: [partners]
+      summary: Edit partner details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerUpdate"
+      responses:
+        "200":
+          description: Updated partner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deletePartner
+      tags: [partners]
+      summary: Soft-delete (suspend) a partner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Suspended partner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  # ── Products ─────────────────────────────────────────────────────────────────
+
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List all products
+      responses:
+        "200":
+          description: Product list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "201":
+          description: Created product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    patch:
+      operationId: updateProduct
+      tags: [products]
+      summary: Update a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdate"
+      responses:
+        "200":
+          description: Updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    delete:
+      operationId: deleteProduct
+      tags: [products]
+      summary: Delete a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Testimonials ─────────────────────────────────────────────────────────────
+
+  /testimonials:
+    get:
+      operationId: listTestimonials
+      tags: [testimonials]
+      summary: List active testimonials
+      responses:
+        "200":
+          description: Testimonial list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimonial"
+    post:
+      operationId: createTestimonial
+      tags: [testimonials]
+      summary: Create a testimonial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestimonialInput"
+      responses:
+        "201":
+          description: Created testimonial
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+
+  # ── Gallery ───────────────────────────────────────────────────────────────────
+
+  /gallery:
+    get:
+      operationId: listGallery
+      tags: [gallery]
+      summary: List gallery images
+      responses:
+        "200":
+          description: Gallery image list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GalleryImage"
+    post:
+      operationId: createGalleryImage
+      tags: [gallery]
+      summary: Add a gallery image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GalleryImageInput"
+      responses:
+        "201":
+          description: Created gallery image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GalleryImage"
+
+  # ── FAQ ───────────────────────────────────────────────────────────────────────
+
+  /faq:
+    get:
+      operationId: listFaq
+      tags: [faq]
+      summary: List FAQ items
+      responses:
+        "200":
+          description: FAQ list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FaqItem"
+    post:
+      operationId: createFaqItem
+      tags: [faq]
+      summary: Create a FAQ item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FaqItemInput"
+      responses:
+        "201":
+          description: Created FAQ item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FaqItem"
+
+  # ── About ─────────────────────────────────────────────────────────────────────
+
+  /about:
+    get:
+      operationId: getAbout
+      tags: [about]
+      summary: Get about / our story content
+      responses:
+        "200":
+          description: About content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AboutContent"
+    put:
+      operationId: updateAbout
+      tags: [about]
+      summary: Update about / our story content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AboutContentInput"
+      responses:
+        "200":
+          description: Updated about content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AboutContent"
+
 components:
   schemas:
+
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    # ── Partner ────────────────────────────────────────────────────────────────
+
+    Partner:
+      type: object
+      required: [id, slug, status, createdAt]
+      properties:
+        id:                    { type: string }
+        slug:                  { type: string }
+        status:                { type: string, enum: [pending, active, suspended] }
+        whatsappNumber:        { type: ["string", "null"] }
+        contactEmail:          { type: ["string", "null"] }
+        heroTitleEn:           { type: ["string", "null"] }
+        heroTitleFr:           { type: ["string", "null"] }
+        heroSubtitleEn:        { type: ["string", "null"] }
+        heroSubtitleFr:        { type: ["string", "null"] }
+        heroImageUrl:          { type: ["string", "null"] }
+        pendingContactName:    { type: ["string", "null"] }
+        pendingContactPhone:   { type: ["string", "null"] }
+        createdAt:             { type: string }
+
+    PartnerInput:
+      type: object
+      required: [slug]
+      properties:
+        slug:                  { type: string, minLength: 2, maxLength: 60 }
+        whatsappNumber:        { type: string }
+        contactEmail:          { type: string }
+        heroTitleEn:           { type: string }
+        heroTitleFr:           { type: string }
+        heroSubtitleEn:        { type: string }
+        heroSubtitleFr:        { type: string }
+        heroImageUrl:          { type: string }
+        pendingContactName:    { type: string }
+        pendingContactPhone:   { type: string }
+
+    PartnerUpdate:
+      type: object
+      properties:
+        whatsappNumber:        { type: string }
+        contactEmail:          { type: string }
+        heroTitleEn:           { type: string }
+        heroTitleFr:           { type: string }
+        heroSubtitleEn:        { type: string }
+        heroSubtitleFr:        { type: string }
+        heroImageUrl:          { type: string }
+
+    PartnerStatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:                { type: string, enum: [pending, active, suspended] }
+
+    PartnerStats:
+      type: object
+      required: [total, active, pending, suspended]
+      properties:
+        total:     { type: integer }
+        active:    { type: integer }
+        pending:   { type: integer }
+        suspended: { type: integer }
+
+    # ── Product ────────────────────────────────────────────────────────────────
+
+    Product:
+      type: object
+      required: [id, nameEn, nameFr, priceXaf, pvPoints, category, isActive]
+      properties:
+        id:            { type: string }
+        nameEn:        { type: string }
+        nameFr:        { type: string }
+        descriptionEn: { type: ["string", "null"] }
+        descriptionFr: { type: ["string", "null"] }
+        priceXaf:      { type: integer }
+        pvPoints:      { type: integer }
+        category:      { type: string }
+        imageUrl:      { type: ["string", "null"] }
+        stock:         { type: integer }
+        isActive:      { type: boolean }
+
+    ProductInput:
+      type: object
+      required: [nameEn, nameFr, priceXaf, pvPoints, category]
+      properties:
+        nameEn:        { type: string }
+        nameFr:        { type: string }
+        descriptionEn: { type: string }
+        descriptionFr: { type: string }
+        priceXaf:      { type: integer }
+        pvPoints:      { type: integer }
+        category:      { type: string }
+        imageUrl:      { type: string }
+        stock:         { type: integer }
+
+    ProductUpdate:
+      type: object
+      properties:
+        nameEn:        { type: string }
+        nameFr:        { type: string }
+        descriptionEn: { type: string }
+        descriptionFr: { type: string }
+        priceXaf:      { type: integer }
+        pvPoints:      { type: integer }
+        category:      { type: string }
+        imageUrl:      { type: string }
+        stock:         { type: integer }
+        isActive:      { type: boolean }
+
+    # ── Testimonial ────────────────────────────────────────────────────────────
+
+    Testimonial:
+      type: object
+      required: [id, authorName, contentEn, contentFr, rating, isActive]
+      properties:
+        id:         { type: string }
+        authorName: { type: string }
+        authorRole: { type: ["string", "null"] }
+        contentEn:  { type: string }
+        contentFr:  { type: string }
+        rating:     { type: integer }
+        imageUrl:   { type: ["string", "null"] }
+        isActive:   { type: boolean }
+        createdAt:  { type: string }
+
+    TestimonialInput:
+      type: object
+      required: [authorName, contentEn, contentFr, rating]
+      properties:
+        authorName: { type: string }
+        authorRole: { type: string }
+        contentEn:  { type: string }
+        contentFr:  { type: string }
+        rating:     { type: integer, minimum: 1, maximum: 5 }
+        imageUrl:   { type: string }
+
+    # ── Gallery ────────────────────────────────────────────────────────────────
+
+    GalleryImage:
+      type: object
+      required: [id, imageUrl, sortOrder]
+      properties:
+        id:         { type: string }
+        imageUrl:   { type: string }
+        captionEn:  { type: ["string", "null"] }
+        captionFr:  { type: ["string", "null"] }
+        sortOrder:  { type: integer }
+
+    GalleryImageInput:
+      type: object
+      required: [imageUrl]
+      properties:
+        imageUrl:   { type: string }
+        captionEn:  { type: string }
+        captionFr:  { type: string }
+        sortOrder:  { type: integer }
+
+    # ── FAQ ────────────────────────────────────────────────────────────────────
+
+    FaqItem:
+      type: object
+      required: [id, questionEn, questionFr, answerEn, answerFr, sortOrder]
+      properties:
+        id:          { type: string }
+        questionEn:  { type: string }
+        questionFr:  { type: string }
+        answerEn:    { type: string }
+        answerFr:    { type: string }
+        category:    { type: ["string", "null"] }
+        sortOrder:   { type: integer }
+
+    FaqItemInput:
+      type: object
+      required: [questionEn, questionFr, answerEn, answerFr]
+      properties:
+        questionEn:  { type: string }
+        questionFr:  { type: string }
+        answerEn:    { type: string }
+        answerFr:    { type: string }
+        category:    { type: string }
+        sortOrder:   { type: integer }
+
+    # ── About ──────────────────────────────────────────────────────────────────
+
+    AboutContent:
+      type: object
+      required: [id, storyEn, storyFr, missionEn, missionFr, visionEn, visionFr]
+      properties:
+        id:         { type: string }
+        storyEn:    { type: string }
+        storyFr:    { type: string }
+        missionEn:  { type: string }
+        missionFr:  { type: string }
+        visionEn:   { type: string }
+        visionFr:   { type: string }
+        imageUrl:   { type: ["string", "null"] }
+        updatedAt:  { type: string }
+
+    AboutContentInput:
+      type: object
+      properties:
+        storyEn:    { type: string }
+        storyFr:    { type: string }
+        missionEn:  { type: string }
+        missionFr:  { type: string }
+        visionEn:   { type: string }
+        visionFr:   { type: string }
+        imageUrl:   { type: string }

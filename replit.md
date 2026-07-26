@@ -1,36 +1,56 @@
-# [Project name]
+# Songtai Life Partners Platform
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A multi-tenant partner website platform for Songtai Life — a Cameroonian wellness brand. Each distributor partner gets their own branded version of the site at `/p/[slug]`, showing their personal WhatsApp number and custom hero content, while sharing products, testimonials, FAQ, gallery, and about content from the main brand.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080, proxied at /api)
+- `pnpm --filter @workspace/songtai-partners run dev` — run the partner site frontend
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- pnpm workspaces, Node.js, TypeScript 5.9
+- API: Express 5 (`artifacts/api-server`)
+- Frontend: React + Vite + Tailwind CSS + shadcn/ui (`artifacts/songtai-partners`)
+- DB: PostgreSQL + Drizzle ORM (`lib/db`)
+- Validation: Zod + drizzle-zod
+- API codegen: Orval (from OpenAPI spec in `lib/api-spec/openapi.yaml`)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — single source of truth for all API contracts
+- `lib/db/src/schema/` — Drizzle table definitions (partners, products, testimonials, gallery, faq, about)
+- `artifacts/api-server/src/routes/` — Express route handlers (partners, products, testimonials, gallery, faq, about)
+- `artifacts/songtai-partners/src/` — React frontend
+- `lib/api-client-react/src/generated/` — generated React Query hooks (don't edit)
+- `lib/api-zod/src/generated/` — generated Zod schemas for server validation (don't edit)
+
+## Pages
+
+- `/` — Landing page: intro, links to demo partner site and admin dashboard
+- `/p/:slug` — Partner site: full branded scrollable page for that partner. Shows their WhatsApp number, hero content, products, testimonials, gallery, FAQ, about. Sticky WhatsApp button. EN/FR toggle.
+- `/admin` — Admin dashboard: partner stats (total/active/pending/suspended)
+- `/admin` → Partners tab — list all partners with status badges, approve/suspend/edit actions
+- `/admin/partners/new` — Create new partner form
+- `/admin/partners/:id` — Edit partner details and status
+
+## Multi-tenancy model
+
+- Partners are identified by their `slug` field
+- URL pattern: `/p/[slug]`
+- A partner with `status: "active"` gets a live site; `pending` or `suspended` shows "not available" message
+- Creating a new partner in admin immediately makes their site live once approved (no redeploy needed)
+- Each partner has their own WhatsApp number that replaces the company number everywhere on their site
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **Soft-delete only**: Partners are suspended (status → suspended), never hard-deleted, to preserve history
+- **Single shared database**: All partners, products, and shared content live in one Postgres DB
+- **Path-based routing** (`/p/:slug`) rather than subdomain-based (subdomain routing requires DNS wildcards)
+- **Bilingual EN/FR**: Language stored in localStorage, toggled in navbar, applied to all content fields
 
 ## User preferences
 
@@ -38,8 +58,7 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- After changing `lib/api-spec/openapi.yaml`, always run `pnpm --filter @workspace/api-spec run codegen` before writing any routes or frontend code
+- The `/p/:slug` route only returns an active partner — status != active returns 404
+- `/api/partners/stats` route must come before `/api/partners/:slug` in Express router (already ordered correctly in routes/partners.ts)
+- Partners are seeded with slugs: `marie-ngono`, `jean-paul-mbarga` (active), `aminata-diallo` (pending)

@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Songtai Partners"
+version = "1.0.0"
+id = "artifacts/songtai-partners"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25527
+
+[services.development]
+run = "pnpm --filter @workspace/songtai-partners run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/songtai-partners", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/songtai-partners/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25527"
+BASE_PATH = "/"
