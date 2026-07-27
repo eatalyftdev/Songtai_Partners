@@ -154,9 +154,20 @@ router.patch("/partners/:id", async (req, res) => {
   }
 
   try {
+    // Build update object with only the fields that are present in the validated body
+    const updateData: Record<string, unknown> = {};
+    if (bodyParse.data.whatsappNumber !== undefined) updateData.whatsappNumber = bodyParse.data.whatsappNumber;
+    if (bodyParse.data.contactEmail !== undefined) updateData.contactEmail = bodyParse.data.contactEmail;
+    if (bodyParse.data.heroTitleEn !== undefined) updateData.heroTitleEn = bodyParse.data.heroTitleEn;
+    if (bodyParse.data.heroTitleFr !== undefined) updateData.heroTitleFr = bodyParse.data.heroTitleFr;
+    if (bodyParse.data.heroSubtitleEn !== undefined) updateData.heroSubtitleEn = bodyParse.data.heroSubtitleEn;
+    if (bodyParse.data.heroSubtitleFr !== undefined) updateData.heroSubtitleFr = bodyParse.data.heroSubtitleFr;
+    if (bodyParse.data.heroImageUrl !== undefined) updateData.heroImageUrl = bodyParse.data.heroImageUrl;
+    if (bodyParse.data.profileImageUrl !== undefined) updateData.profileImageUrl = bodyParse.data.profileImageUrl;
+
     const [partner] = await db
       .update(partnersTable)
-      .set(bodyParse.data)
+      .set(updateData)
       .where(eq(partnersTable.id, paramParse.data.id))
       .returning();
 
