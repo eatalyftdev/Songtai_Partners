@@ -257,118 +257,100 @@ export default function PartnerSite() {
               </p>
             </div>
 
-            {videoCategories.length > 0 ? (
-              <div className="space-y-16">
-                {videoCategories.map(category => {
-                  const categoryProducts = productsWithVideo.filter(p => p.category === category);
-                  return (
-                    <div key={category}>
-                      <div className="flex items-center gap-4 mb-8">
-                        <Badge variant="outline" className="text-sm px-4 py-1.5 font-medium border-primary/30 text-primary">
-                          {category}
-                        </Badge>
-                        <div className="flex-1 h-px bg-border" />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        {categoryProducts.map(product => (
-                          <div key={product.id} className="space-y-4">
-                            <VideoEmbed url={product.videoUrl!} title={t(product.nameEn, product.nameFr)} />
-                            <div className="flex items-start justify-between gap-4">
-                              <div>
-                                <h3 className="font-serif font-bold text-lg">{t(product.nameEn, product.nameFr)}</h3>
-                                {(product.descriptionEn || product.descriptionFr) && (
-                                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                    {t(product.descriptionEn || "", product.descriptionFr || "")}
-                                  </p>
-                                )}
-                              </div>
-                              <a
-                                href={`https://wa.me/${partner.whatsappNumber?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello! I'm interested in: ${t(product.nameEn, product.nameFr)}`)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="shrink-0"
-                              >
-                                <Button size="sm" className="rounded-full">
-                                  {t("Order", "Commander")}
-                                </Button>
-                              </a>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+            {(() => {
+              const VideoProductCard = ({ product }: { product: typeof productsWithVideo[0] }) => {
+                const imgUrl = resolveImageUrl(product.imageUrl);
+                const waUrl = `https://wa.me/${partner.whatsappNumber?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello! I'm interested in: ${t(product.nameEn, product.nameFr)}`)}`;
+                const inStock = product.stock == null || product.stock > 0;
+                return (
+                  <div className="rounded-2xl border border-border/50 bg-background overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    {/* Video embed */}
+                    <div className="p-4 pb-0">
+                      <VideoEmbed url={product.videoUrl!} title={t(product.nameEn, product.nameFr)} />
                     </div>
-                  );
-                })}
 
-                {/* Products without a category that have videos */}
-                {productsWithVideo.filter(p => !p.category).length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-4 mb-8">
-                      <Badge variant="outline" className="text-sm px-4 py-1.5 font-medium border-primary/30 text-primary">
-                        {t("Other Products", "Autres Produits")}
-                      </Badge>
-                      <div className="flex-1 h-px bg-border" />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                      {productsWithVideo.filter(p => !p.category).map(product => (
-                        <div key={product.id} className="space-y-4">
-                          <VideoEmbed url={product.videoUrl!} title={t(product.nameEn, product.nameFr)} />
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <h3 className="font-serif font-bold text-lg">{t(product.nameEn, product.nameFr)}</h3>
-                              {(product.descriptionEn || product.descriptionFr) && (
-                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                  {t(product.descriptionEn || "", product.descriptionFr || "")}
-                                </p>
-                              )}
-                            </div>
-                            <a
-                              href={`https://wa.me/${partner.whatsappNumber?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello! I'm interested in: ${t(product.nameEn, product.nameFr)}`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="shrink-0"
-                            >
-                              <Button size="sm" className="rounded-full">
-                                {t("Order", "Commander")}
-                              </Button>
-                            </a>
-                          </div>
+                    {/* Product details */}
+                    <div className="p-6 flex gap-5">
+                      {/* Thumbnail */}
+                      {imgUrl && (
+                        <div className="shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-muted border border-border/40">
+                          <img
+                            src={imgUrl}
+                            alt={t(product.nameEn, product.nameFr)}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* No categories — flat grid */
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {productsWithVideo.map(product => (
-                  <div key={product.id} className="space-y-4">
-                    <VideoEmbed url={product.videoUrl!} title={t(product.nameEn, product.nameFr)} />
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-serif font-bold text-lg">{t(product.nameEn, product.nameFr)}</h3>
+                      )}
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <h3 className="font-serif font-bold text-lg leading-tight">{t(product.nameEn, product.nameFr)}</h3>
+                          <span className="font-semibold text-primary text-base shrink-0">{product.priceXaf.toLocaleString()} FCFA</span>
+                        </div>
+
                         {(product.descriptionEn || product.descriptionFr) && (
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <p className="text-sm text-muted-foreground leading-relaxed mb-3">
                             {t(product.descriptionEn || "", product.descriptionFr || "")}
                           </p>
                         )}
+
+                        <div className="flex flex-wrap items-center gap-2 mb-4">
+                          <span className="text-xs font-medium bg-muted px-2.5 py-1 rounded-full text-muted-foreground">
+                            {product.pvPoints} PV
+                          </span>
+                          {product.category && (
+                            <Badge variant="outline" className="text-xs border-primary/30 text-primary px-2.5 py-1">
+                              {product.category}
+                            </Badge>
+                          )}
+                          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${inStock ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-500'}`}>
+                            {inStock ? t("In stock", "En stock") : t("Out of stock", "Rupture de stock")}
+                          </span>
+                        </div>
+
+                        <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" className="rounded-full w-full sm:w-auto">
+                            {t("Order via WhatsApp", "Commander via WhatsApp")}
+                          </Button>
+                        </a>
                       </div>
-                      <a
-                        href={`https://wa.me/${partner.whatsappNumber?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello! I'm interested in: ${t(product.nameEn, product.nameFr)}`)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="shrink-0"
-                      >
-                        <Button size="sm" className="rounded-full">
-                          {t("Order", "Commander")}
-                        </Button>
-                      </a>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                );
+              };
+
+              const groups = videoCategories.length > 0
+                ? videoCategories.map(cat => ({ label: cat, items: productsWithVideo.filter(p => p.category === cat) }))
+                : [{ label: null, items: productsWithVideo }];
+
+              const uncategorised = productsWithVideo.filter(p => !p.category);
+              if (videoCategories.length > 0 && uncategorised.length > 0) {
+                groups.push({ label: t("Other Products", "Autres Produits"), items: uncategorised });
+              }
+
+              return (
+                <div className="space-y-16">
+                  {groups.map((group, gi) => (
+                    <div key={group.label ?? gi}>
+                      {group.label && (
+                        <div className="flex items-center gap-4 mb-8">
+                          <Badge variant="outline" className="text-sm px-4 py-1.5 font-medium border-primary/30 text-primary">
+                            {group.label}
+                          </Badge>
+                          <div className="flex-1 h-px bg-border" />
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {group.items.map(product => (
+                          <VideoProductCard key={product.id} product={product} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         </section>
       )}
