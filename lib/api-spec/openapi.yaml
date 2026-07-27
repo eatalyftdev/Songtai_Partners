@@ -494,7 +494,7 @@ components:
 
     Product:
       type: object
-      required: [id, nameEn, nameFr, priceXaf, pvPoints, category, isActive]
+      required: [id, nameEn, nameFr, priceXaf, pvPoints, isActive]
       properties:
         id:            { type: string }
         nameEn:        { type: string }
@@ -503,14 +503,15 @@ components:
         descriptionFr: { type: ["string", "null"] }
         priceXaf:      { type: integer }
         pvPoints:      { type: integer }
-        category:      { type: string }
+        category:      { type: ["string", "null"] }
         imageUrl:      { type: ["string", "null"] }
+        videoUrl:      { type: ["string", "null"] }
         stock:         { type: integer }
         isActive:      { type: boolean }
 
     ProductInput:
       type: object
-      required: [nameEn, nameFr, priceXaf, pvPoints, category]
+      required: [nameEn, nameFr, priceXaf, pvPoints]
       properties:
         nameEn:        { type: string }
         nameFr:        { type: string }
@@ -520,6 +521,7 @@ components:
         pvPoints:      { type: integer }
         category:      { type: string }
         imageUrl:      { type: string }
+        videoUrl:      { type: string }
         stock:         { type: integer }
 
     ProductUpdate:
@@ -531,8 +533,9 @@ components:
         descriptionFr: { type: ["string", "null"] }
         priceXaf:      { type: integer }
         pvPoints:      { type: integer }
-        category:      { type: string }
+        category:      { type: ["string", "null"] }
         imageUrl:      { type: ["string", "null"] }
+        videoUrl:      { type: ["string", "null"] }
         stock:         { type: integer }
         isActive:      { type: boolean }
 
