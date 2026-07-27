@@ -1,0 +1,35 @@
+# Claude Code Verification Prompt — Bilingual Products on Partner Sites (Confirm, Don't Rebuild)
+
+Paste this into Claude Code inside the `songtai-life` repo.
+
+---
+
+## 0. Skill activation
+
+Activate **Quality/Testing** and **Frontend/Mobile** skills from the `jeffallan/claude-skills` framework before starting. State which skills you're activating.
+
+## 1. Context — this is a verification pass, not a build task
+
+`src/components/brand/Products.tsx` already fetches the full catalog from Supabase (`products` table, `is_active = true`, joined to `product_categories`), already maps both `name_en`/`name_fr` and `description_en`/`description_fr` into `getName()`/`getDesc()` helpers that switch on the active locale (falling back to English when a French value is missing), and already renders identically on the main site and every partner site via `BrandShowcase`'s `effectivePage === "products"` branch — there is no partner-specific gating on this page at all currently. All 7 seeded products are `is_active: true` with real XAF pricing right now.
+
+**Do not rewrite or refactor this feature.** The job here is to actually verify it behaves correctly end-to-end, in a live/dev-server context, not just re-read the source and assume it's fine.
+
+## 2. What to actually verify
+
+1. **Start the dev server and visit the Products page on the main site.** Confirm every active product renders with correct name, description, price (formatted with thousands separators, in XAF), and category.
+2. **Toggle the language switcher to French.** Confirm every product's name/description switches to its `_fr` value. For any product where a `_fr` field happens to be empty or null, confirm it falls back to the English value rather than rendering blank.
+3. **Visit a partner site's Products page** (e.g. `/p/demo-partner`, or your real test partner) — confirm it shows the identical catalog and behaves identically for the EN/FR toggle. This is the specific claim to confirm, since it was inferred from the absence of partner-gating in the code rather than watched directly.
+4. **Confirm category filtering/grouping** (if the UI groups by category) shows the correct bilingual category names too, not just product names.
+5. **Confirm the Realtime subscription actually works**: with the Products page open in a browser tab, change a product's price or bilingual name/description from the admin Products page in another tab, and confirm the open Products page updates without a manual refresh.
+6. **Toggle a product to `is_active = false`** from admin — confirm it disappears from both the main site and a partner site's Products page immediately (same Realtime path).
+7. **Check the empty-catalog state**: if every product were inactive, confirm the page shows a sensible empty state rather than a blank page or a console error (the code has a `FALLBACK` seed array for when Supabase is unreachable — confirm this fallback path doesn't accidentally trigger when Supabase is reachable but simply has zero active products, since those are two different situations that should be handled differently: "can't reach the database" vs. "reached it, there's nothing active right now").
+8. **Confirm product images render correctly** in both list and any detail/video-modal view, and that missing images degrade gracefully (no broken image icon).
+
+## 3. Report back
+For each of the 8 checks above, report pass/fail with a one-line note — not just "looks good." If anything fails, fix that specific issue only (don't restructure the component), then re-verify the same checklist before considering this done.
+
+## 4. QA checklist
+- [ ] All 8 verification steps above completed and reported individually
+- [ ] Any fix made is minimal and scoped to the actual failure found
+- [ ] Re-run the full checklist after any fix
+- [ ] Run existing lint/test suite, then deploy if changes were made
