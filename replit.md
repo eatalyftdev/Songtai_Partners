@@ -10,6 +10,22 @@ A multi-tenant partner website platform for Songtai Life — a Cameroonian welln
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 
+## Environment Variables
+
+### Replit (dev)
+Add as a Replit Secret:
+- `SUPABASE_DATABASE_URL` — Supabase PostgreSQL connection string (Transaction mode recommended: `postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true`)
+
+### Vercel (production — frontend)
+Set in Vercel project settings → Environment Variables:
+- `VITE_API_URL` — Full URL of the deployed API server (e.g. `https://your-api.railway.app/api`). Leave unset if frontend and API are served from the same origin via Vercel rewrites.
+- `BASE_PATH` — `/` (root deployment)
+
+### Vercel / Railway / Render (production — API server)
+- `SUPABASE_DATABASE_URL` — Same Supabase connection string as above
+- `PORT` — Set automatically by the platform; no need to configure
+- `NODE_ENV` — `production`
+
 ## Stack
 
 - pnpm workspaces, Node.js, TypeScript 5.9
