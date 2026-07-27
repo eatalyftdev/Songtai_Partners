@@ -1,0 +1,2 @@
+- [Supabase connection](supabase-connection.md) — use SUPABASE_DATABASE_URL (not DATABASE_URL) + ssl:{rejectUnauthorized:false}; pooler port 6543 required from Replit
+- [Schema migration approach](schema-migration.md) — drizzle-kit push needs TTY; use scripts/src/migrate-schema.ts instead for non-interactive ALTER/CREATE IF NOT EXISTS
