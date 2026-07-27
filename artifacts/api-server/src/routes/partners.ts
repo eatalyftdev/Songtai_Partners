@@ -20,10 +20,10 @@ router.get("/partners", async (req, res) => {
       .select()
       .from(partnersTable)
       .orderBy(partnersTable.createdAt);
-    res.json(partners);
+    return res.json(partners);
   } catch (err) {
     req.log.error({ err }, "listPartners failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -37,10 +37,10 @@ router.get("/partners/stats", async (req, res) => {
       else if (p.status === "pending") stats.pending++;
       else if (p.status === "suspended") stats.suspended++;
     }
-    res.json(stats);
+    return res.json(stats);
   } catch (err) {
     req.log.error({ err }, "getPartnerStats failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -48,8 +48,7 @@ router.get("/partners/stats", async (req, res) => {
 router.get("/partners/:slug", async (req, res) => {
   const parse = GetPartnerBySlugParams.safeParse(req.params);
   if (!parse.success) {
-    res.status(400).json({ error: "Invalid slug" });
-    return;
+    return res.status(400).json({ error: "Invalid slug" });
   }
 
   try {
@@ -60,13 +59,12 @@ router.get("/partners/:slug", async (req, res) => {
       .limit(1);
 
     if (!partner || partner.status !== "active") {
-      res.status(404).json({ error: "Partner not found or not active" });
-      return;
+      return res.status(404).json({ error: "Partner not found or not active" });
     }
-    res.json(partner);
+    return res.json(partner);
   } catch (err) {
     req.log.error({ err }, "getPartnerBySlug failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -74,14 +72,12 @@ router.get("/partners/:slug", async (req, res) => {
 router.post("/partners", async (req, res) => {
   const parse = CreatePartnerBody.safeParse(req.body);
   if (!parse.success) {
-    res.status(400).json({ error: parse.error.message });
-    return;
+    return res.status(400).json({ error: parse.error.message });
   }
 
   // Validate slug format
   if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(parse.data.slug) || parse.data.slug.length < 2) {
-    res.status(400).json({ error: "Slug must be lowercase letters, numbers, and hyphens only" });
-    return;
+    return res.status(400).json({ error: "Slug must be lowercase letters, numbers, and hyphens only" });
   }
 
   try {
@@ -92,18 +88,17 @@ router.post("/partners", async (req, res) => {
       .limit(1);
 
     if (existing) {
-      res.status(409).json({ error: "Slug already taken" });
-      return;
+      return res.status(409).json({ error: "Slug already taken" });
     }
 
     const [partner] = await db
       .insert(partnersTable)
-      .values(parse.data as typeof partnersTable.$inferInsert)
+      .values(parse.data)
       .returning();
-    res.status(201).json(partner);
+    return res.status(201).json(partner);
   } catch (err) {
     req.log.error({ err }, "createPartner failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -111,14 +106,12 @@ router.post("/partners", async (req, res) => {
 router.patch("/partners/:id/status", async (req, res) => {
   const paramParse = UpdatePartnerStatusParams.safeParse(req.params);
   if (!paramParse.success) {
-    res.status(400).json({ error: "Invalid id" });
-    return;
+    return res.status(400).json({ error: "Invalid id" });
   }
 
   const bodyParse = UpdatePartnerStatusBody.safeParse(req.body);
   if (!bodyParse.success) {
-    res.status(400).json({ error: bodyParse.error.message });
-    return;
+    return res.status(400).json({ error: bodyParse.error.message });
   }
 
   try {
@@ -129,13 +122,12 @@ router.patch("/partners/:id/status", async (req, res) => {
       .returning();
 
     if (!partner) {
-      res.status(404).json({ error: "Partner not found" });
-      return;
+      return res.status(404).json({ error: "Partner not found" });
     }
-    res.json(partner);
+    return res.json(partner);
   } catch (err) {
     req.log.error({ err }, "updatePartnerStatus failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -143,21 +135,19 @@ router.patch("/partners/:id/status", async (req, res) => {
 router.patch("/partners/:id", async (req, res) => {
   const paramParse = UpdatePartnerParams.safeParse(req.params);
   if (!paramParse.success) {
-    res.status(400).json({ error: "Invalid id" });
-    return;
+    return res.status(400).json({ error: "Invalid id" });
   }
 
   const bodyParse = UpdatePartnerBody.safeParse(req.body);
   if (!bodyParse.success) {
-    res.status(400).json({ error: bodyParse.error.message });
-    return;
+    return res.status(400).json({ error: bodyParse.error.message });
   }
 
   try {
-    // Filter out null/undefined values and cast to proper type for Drizzle
+    // Filter out null/undefined values to only update provided fields
     const updateData = Object.fromEntries(
       Object.entries(bodyParse.data).filter(([, v]) => v != null),
-    ) as Partial<typeof partnersTable.$inferInsert>;
+    );
 
     const [partner] = await db
       .update(partnersTable)
@@ -166,13 +156,12 @@ router.patch("/partners/:id", async (req, res) => {
       .returning();
 
     if (!partner) {
-      res.status(404).json({ error: "Partner not found" });
-      return;
+      return res.status(404).json({ error: "Partner not found" });
     }
-    res.json(partner);
+    return res.json(partner);
   } catch (err) {
     req.log.error({ err }, "updatePartner failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -180,8 +169,7 @@ router.patch("/partners/:id", async (req, res) => {
 router.delete("/partners/:id", async (req, res) => {
   const parse = DeletePartnerParams.safeParse(req.params);
   if (!parse.success) {
-    res.status(400).json({ error: "Invalid id" });
-    return;
+    return res.status(400).json({ error: "Invalid id" });
   }
 
   try {
@@ -192,13 +180,12 @@ router.delete("/partners/:id", async (req, res) => {
       .returning();
 
     if (!partner) {
-      res.status(404).json({ error: "Partner not found" });
-      return;
+      return res.status(404).json({ error: "Partner not found" });
     }
-    res.json(partner);
+    return res.json(partner);
   } catch (err) {
     req.log.error({ err }, "deletePartner failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
