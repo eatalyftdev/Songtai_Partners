@@ -7,11 +7,18 @@
  */
 
 export interface PartnerUpdate {
-  whatsappNumber?: string;
-  contactEmail?: string;
-  heroTitleEn?: string;
-  heroTitleFr?: string;
-  heroSubtitleEn?: string;
-  heroSubtitleFr?: string;
-  heroImageUrl?: string;
+  /** @nullable */
+  whatsappNumber?: string | null;
+  /** @nullable */
+  contactEmail?: string | null;
+  /** @nullable */
+  heroTitleEn?: string | null;
+  /** @nullable */
+  heroTitleFr?: string | null;
+  /** @nullable */
+  heroSubtitleEn?: string | null;
+  /** @nullable */
+  heroSubtitleFr?: string | null;
+  /** @nullable */
+  heroImageUrl?: string | null;
 }

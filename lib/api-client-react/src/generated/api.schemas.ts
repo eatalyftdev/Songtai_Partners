@@ -65,13 +65,20 @@ export interface PartnerInput {
 }
 
 export interface PartnerUpdate {
-  whatsappNumber?: string;
-  contactEmail?: string;
-  heroTitleEn?: string;
-  heroTitleFr?: string;
-  heroSubtitleEn?: string;
-  heroSubtitleFr?: string;
-  heroImageUrl?: string;
+  /** @nullable */
+  whatsappNumber?: string | null;
+  /** @nullable */
+  contactEmail?: string | null;
+  /** @nullable */
+  heroTitleEn?: string | null;
+  /** @nullable */
+  heroTitleFr?: string | null;
+  /** @nullable */
+  heroSubtitleEn?: string | null;
+  /** @nullable */
+  heroSubtitleFr?: string | null;
+  /** @nullable */
+  heroImageUrl?: string | null;
 }
 
 export type PartnerStatusUpdateStatus = typeof PartnerStatusUpdateStatus[keyof typeof PartnerStatusUpdateStatus];
@@ -126,12 +133,15 @@ export interface ProductInput {
 export interface ProductUpdate {
   nameEn?: string;
   nameFr?: string;
-  descriptionEn?: string;
-  descriptionFr?: string;
+  /** @nullable */
+  descriptionEn?: string | null;
+  /** @nullable */
+  descriptionFr?: string | null;
   priceXaf?: number;
   pvPoints?: number;
   category?: string;
-  imageUrl?: string;
+  /** @nullable */
+  imageUrl?: string | null;
   stock?: number;
   isActive?: boolean;
 }

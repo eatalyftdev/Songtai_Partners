@@ -146,13 +146,13 @@ export const UpdatePartnerParams = zod.object({
 })
 
 export const UpdatePartnerBody = zod.object({
-  "whatsappNumber": zod.string().optional(),
-  "contactEmail": zod.string().optional(),
-  "heroTitleEn": zod.string().optional(),
-  "heroTitleFr": zod.string().optional(),
-  "heroSubtitleEn": zod.string().optional(),
-  "heroSubtitleFr": zod.string().optional(),
-  "heroImageUrl": zod.string().optional()
+  "whatsappNumber": zod.string().nullish(),
+  "contactEmail": zod.string().nullish(),
+  "heroTitleEn": zod.string().nullish(),
+  "heroTitleFr": zod.string().nullish(),
+  "heroSubtitleEn": zod.string().nullish(),
+  "heroSubtitleFr": zod.string().nullish(),
+  "heroImageUrl": zod.string().nullish()
 })
 
 export const UpdatePartnerResponse = zod.object({
@@ -255,12 +255,12 @@ export const UpdateProductParams = zod.object({
 export const UpdateProductBody = zod.object({
   "nameEn": zod.string().optional(),
   "nameFr": zod.string().optional(),
-  "descriptionEn": zod.string().optional(),
-  "descriptionFr": zod.string().optional(),
+  "descriptionEn": zod.string().nullish(),
+  "descriptionFr": zod.string().nullish(),
   "priceXaf": zod.number().optional(),
   "pvPoints": zod.number().optional(),
   "category": zod.string().optional(),
-  "imageUrl": zod.string().optional(),
+  "imageUrl": zod.string().nullish(),
   "stock": zod.number().optional(),
   "isActive": zod.boolean().optional()
 })

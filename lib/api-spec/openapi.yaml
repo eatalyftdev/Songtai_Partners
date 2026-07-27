@@ -467,13 +467,13 @@ components:
     PartnerUpdate:
       type: object
       properties:
-        whatsappNumber:        { type: string }
-        contactEmail:          { type: string }
-        heroTitleEn:           { type: string }
-        heroTitleFr:           { type: string }
-        heroSubtitleEn:        { type: string }
-        heroSubtitleFr:        { type: string }
-        heroImageUrl:          { type: string }
+        whatsappNumber:        { type: ["string", "null"] }
+        contactEmail:          { type: ["string", "null"] }
+        heroTitleEn:           { type: ["string", "null"] }
+        heroTitleFr:           { type: ["string", "null"] }
+        heroSubtitleEn:        { type: ["string", "null"] }
+        heroSubtitleFr:        { type: ["string", "null"] }
+        heroImageUrl:          { type: ["string", "null"] }
 
     PartnerStatusUpdate:
       type: object
@@ -527,12 +527,12 @@ components:
       properties:
         nameEn:        { type: string }
         nameFr:        { type: string }
-        descriptionEn: { type: string }
-        descriptionFr: { type: string }
+        descriptionEn: { type: ["string", "null"] }
+        descriptionFr: { type: ["string", "null"] }
         priceXaf:      { type: integer }
         pvPoints:      { type: integer }
         category:      { type: string }
-        imageUrl:      { type: string }
+        imageUrl:      { type: ["string", "null"] }
         stock:         { type: integer }
         isActive:      { type: boolean }
 

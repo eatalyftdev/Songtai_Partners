@@ -11,7 +11,7 @@ export default function PartnerSite() {
   const { slug } = useParams();
   const { t } = useI18n();
 
-  const { data: partner, isLoading: partnerLoading, isError } = useGetPartnerBySlug(slug || "");
+  const { data: partner, isLoading: partnerLoading, isError } = useGetPartnerBySlug(slug || "", { query: { retry: false } });
   const { data: products } = useListProducts();
   const { data: testimonials } = useListTestimonials();
   const { data: gallery } = useListGallery();

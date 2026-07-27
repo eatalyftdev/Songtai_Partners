@@ -9,12 +9,15 @@
 export interface ProductUpdate {
   nameEn?: string;
   nameFr?: string;
-  descriptionEn?: string;
-  descriptionFr?: string;
+  /** @nullable */
+  descriptionEn?: string | null;
+  /** @nullable */
+  descriptionFr?: string | null;
   priceXaf?: number;
   pvPoints?: number;
   category?: string;
-  imageUrl?: string;
+  /** @nullable */
+  imageUrl?: string | null;
   stock?: number;
   isActive?: boolean;
 }
