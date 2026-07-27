@@ -98,7 +98,7 @@ router.post("/partners", async (req, res) => {
 
     const [partner] = await db
       .insert(partnersTable)
-      .values(parse.data)
+      .values(parse.data as typeof partnersTable.$inferInsert)
       .returning();
     res.status(201).json(partner);
   } catch (err) {
@@ -154,16 +154,10 @@ router.patch("/partners/:id", async (req, res) => {
   }
 
   try {
-    // Build update object with only the fields that are present in the validated body
-    const updateData: Record<string, unknown> = {};
-    if (bodyParse.data.whatsappNumber !== undefined) updateData.whatsappNumber = bodyParse.data.whatsappNumber;
-    if (bodyParse.data.contactEmail !== undefined) updateData.contactEmail = bodyParse.data.contactEmail;
-    if (bodyParse.data.heroTitleEn !== undefined) updateData.heroTitleEn = bodyParse.data.heroTitleEn;
-    if (bodyParse.data.heroTitleFr !== undefined) updateData.heroTitleFr = bodyParse.data.heroTitleFr;
-    if (bodyParse.data.heroSubtitleEn !== undefined) updateData.heroSubtitleEn = bodyParse.data.heroSubtitleEn;
-    if (bodyParse.data.heroSubtitleFr !== undefined) updateData.heroSubtitleFr = bodyParse.data.heroSubtitleFr;
-    if (bodyParse.data.heroImageUrl !== undefined) updateData.heroImageUrl = bodyParse.data.heroImageUrl;
-    if (bodyParse.data.profileImageUrl !== undefined) updateData.profileImageUrl = bodyParse.data.profileImageUrl;
+    // Filter out null/undefined values and cast to proper type for Drizzle
+    const updateData = Object.fromEntries(
+      Object.entries(bodyParse.data).filter(([, v]) => v != null),
+    ) as Partial<typeof partnersTable.$inferInsert>;
 
     const [partner] = await db
       .update(partnersTable)
