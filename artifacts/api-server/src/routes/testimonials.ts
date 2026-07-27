@@ -13,10 +13,10 @@ router.get("/testimonials", async (req, res) => {
       .from(testimonialsTable)
       .where(eq(testimonialsTable.isActive, true))
       .orderBy(testimonialsTable.createdAt);
-    res.json(testimonials);
+    return res.json(testimonials);
   } catch (err) {
     req.log.error({ err }, "listTestimonials failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -27,10 +27,10 @@ router.post("/testimonials", async (req, res) => {
 
   try {
     const [testimonial] = await db.insert(testimonialsTable).values(parse.data).returning();
-    res.status(201).json(testimonial);
+    return res.status(201).json(testimonial);
   } catch (err) {
     req.log.error({ err }, "createTestimonial failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

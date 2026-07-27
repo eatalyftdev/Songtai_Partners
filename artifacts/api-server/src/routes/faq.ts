@@ -12,10 +12,10 @@ router.get("/faq", async (req, res) => {
       .select()
       .from(faqTable)
       .orderBy(asc(faqTable.sortOrder));
-    res.json(items);
+    return res.json(items);
   } catch (err) {
     req.log.error({ err }, "listFaq failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -26,10 +26,10 @@ router.post("/faq", async (req, res) => {
 
   try {
     const [item] = await db.insert(faqTable).values(parse.data).returning();
-    res.status(201).json(item);
+    return res.status(201).json(item);
   } catch (err) {
     req.log.error({ err }, "createFaqItem failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

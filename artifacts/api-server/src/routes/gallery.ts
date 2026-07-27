@@ -12,10 +12,10 @@ router.get("/gallery", async (req, res) => {
       .select()
       .from(galleryTable)
       .orderBy(asc(galleryTable.sortOrder));
-    res.json(images);
+    return res.json(images);
   } catch (err) {
     req.log.error({ err }, "listGallery failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -26,10 +26,10 @@ router.post("/gallery", async (req, res) => {
 
   try {
     const [image] = await db.insert(galleryTable).values(parse.data).returning();
-    res.status(201).json(image);
+    return res.status(201).json(image);
   } catch (err) {
     req.log.error({ err }, "createGalleryImage failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

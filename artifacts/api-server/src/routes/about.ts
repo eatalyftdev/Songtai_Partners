@@ -11,10 +11,10 @@ router.get("/about", async (req, res) => {
     if (!about) {
       return res.status(404).json({ error: "About content not found" });
     }
-    res.json(about);
+    return res.json(about);
   } catch (err) {
     req.log.error({ err }, "getAbout failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -46,10 +46,10 @@ router.put("/about", async (req, res) => {
         })
         .returning();
     }
-    res.json(about);
+    return res.json(about);
   } catch (err) {
     req.log.error({ err }, "updateAbout failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

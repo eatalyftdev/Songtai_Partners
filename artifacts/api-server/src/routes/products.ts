@@ -18,10 +18,10 @@ router.get("/products", async (req, res) => {
       .from(productsTable)
       .where(eq(productsTable.isActive, true))
       .orderBy(productsTable.category);
-    res.json(products);
+    return res.json(products);
   } catch (err) {
     req.log.error({ err }, "listProducts failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -31,11 +31,11 @@ router.post("/products", async (req, res) => {
   if (!parse.success) return res.status(400).json({ error: parse.error.message });
 
   try {
-    const [product] = await db.insert(productsTable).values(parse.data).returning();
-    res.status(201).json(product);
+    const [product] = await db.insert(productsTable).values(parse.data as typeof productsTable.$inferInsert).returning();
+    return res.status(201).json(product);
   } catch (err) {
     req.log.error({ err }, "createProduct failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -48,16 +48,19 @@ router.patch("/products/:id", async (req, res) => {
   if (!bodyParse.success) return res.status(400).json({ error: bodyParse.error.message });
 
   try {
+    const updateData = Object.fromEntries(
+      Object.entries(bodyParse.data).filter(([, v]) => v != null),
+    ) as Partial<typeof productsTable.$inferInsert>;
     const [product] = await db
       .update(productsTable)
-      .set(bodyParse.data)
+      .set(updateData)
       .where(eq(productsTable.id, paramParse.data.id))
       .returning();
     if (!product) return res.status(404).json({ error: "Product not found" });
-    res.json(product);
+    return res.json(product);
   } catch (err) {
     req.log.error({ err }, "updateProduct failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -68,10 +71,10 @@ router.delete("/products/:id", async (req, res) => {
 
   try {
     await db.delete(productsTable).where(eq(productsTable.id, parse.data.id));
-    res.status(204).end();
+    return res.status(204).end();
   } catch (err) {
     req.log.error({ err }, "deleteProduct failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

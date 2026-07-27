@@ -20,10 +20,10 @@ router.get("/partners", async (req, res) => {
       .select()
       .from(partnersTable)
       .orderBy(partnersTable.createdAt);
-    res.json(partners);
+    return res.json(partners);
   } catch (err) {
     req.log.error({ err }, "listPartners failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -37,10 +37,10 @@ router.get("/partners/stats", async (req, res) => {
       else if (p.status === "pending") stats.pending++;
       else if (p.status === "suspended") stats.suspended++;
     }
-    res.json(stats);
+    return res.json(stats);
   } catch (err) {
     req.log.error({ err }, "getPartnerStats failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -59,10 +59,10 @@ router.get("/partners/:slug", async (req, res) => {
     if (!partner || partner.status !== "active") {
       return res.status(404).json({ error: "Partner not found or not active" });
     }
-    res.json(partner);
+    return res.json(partner);
   } catch (err) {
     req.log.error({ err }, "getPartnerBySlug failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -91,10 +91,10 @@ router.post("/partners", async (req, res) => {
       .insert(partnersTable)
       .values(parse.data)
       .returning();
-    res.status(201).json(partner);
+    return res.status(201).json(partner);
   } catch (err) {
     req.log.error({ err }, "createPartner failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -114,10 +114,10 @@ router.patch("/partners/:id/status", async (req, res) => {
       .returning();
 
     if (!partner) return res.status(404).json({ error: "Partner not found" });
-    res.json(partner);
+    return res.json(partner);
   } catch (err) {
     req.log.error({ err }, "updatePartnerStatus failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -137,10 +137,10 @@ router.patch("/partners/:id", async (req, res) => {
       .returning();
 
     if (!partner) return res.status(404).json({ error: "Partner not found" });
-    res.json(partner);
+    return res.json(partner);
   } catch (err) {
     req.log.error({ err }, "updatePartner failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -157,10 +157,10 @@ router.delete("/partners/:id", async (req, res) => {
       .returning();
 
     if (!partner) return res.status(404).json({ error: "Partner not found" });
-    res.json(partner);
+    return res.json(partner);
   } catch (err) {
     req.log.error({ err }, "deletePartner failed");
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
