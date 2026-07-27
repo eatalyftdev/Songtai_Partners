@@ -1,0 +1,79 @@
+# Claude Code Build Prompt — Confirm Live Supabase Connection Everywhere + Verify Seeded Partner Data
+
+Paste this into Claude Code inside the `songtai-life` repo.
+
+---
+
+## 0. Skill activation
+
+Activate **Backend**, **Infrastructure**, **Data/ML**, and **Quality/Testing** skills from the `jeffallan/claude-skills` framework before starting. State which skills you're activating.
+
+## 1. The real connection values — set these first
+
+These are the **actual, live** values for the Songtai Life Supabase project. The URL and anon/publishable keys below are safe to put in client-side env vars — they're public by design, protected by Row Level Security, not secrets:
+
+```
+SUPABASE_URL=https://auyjxchghtetxpiyecds.supabase.co
+VITE_SUPABASE_URL=https://auyjxchghtetxpiyecds.supabase.co
+
+# Legacy JWT-format anon key (works with the existing @supabase/supabase-js client as-is):
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1eWp4Y2hnaHRldHhwaXllY2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMDIxNjksImV4cCI6MjA5ODU3ODE2OX0.KhNahEFCe4_l4a_2ucsOp9OFUXnmEBlYNZW33xSFnas
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1eWp4Y2hnaHRldHhwaXllY2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMDIxNjksImV4cCI6MjA5ODU3ODE2OX0.KhNahEFCe4_l4a_2ucsOp9OFUXnmEBlYNZW33xSFnas
+
+# Newer-format publishable key (same project, alternate key style — use whichever
+# this codebase's Supabase client version expects; don't set both key styles as
+# if they were different projects, they're the same project's two key formats):
+# sb_publishable_FqZei8S8eXSMlukBvZgSxg_88x71cSq
+```
+
+**These two you must get yourself, not from this prompt — they are genuine secrets and were never exposed to whoever wrote this prompt, on purpose:**
+
+```
+SUPABASE_SERVICE_ROLE_KEY=<get this from the Supabase dashboard → Project Settings → API → service_role secret>
+SESSION_SECRET=<generate a new long random string — do not reuse any secret from another project>
+```
+
+Everything else in `.env.example` (`ADMIN_BOOTSTRAP_KEY`, `MESOMB_*`, `GEMINI_API_KEY`, `VERCEL_API_TOKEN`, `TWILIO_*`, `CRON_SECRET`) also needs real values from wherever Zayne manages those accounts — this prompt only covers the Supabase connection specifically, since that's what was asked for.
+
+Set these in whichever environment(s) you're actually running against (local `.env`, and/or the hosting platform's project environment variables) — do not commit real secret values into the repository.
+
+## 2. Audit: is the app actually reading from Supabase, or from something else?
+
+Go through every data-driven feature and confirm each one reads from the **live Supabase database** as its primary source — not a hardcoded array, a local mock, or a same-server in-memory default that's silently preferred over the real data:
+
+- **Products** (`src/components/brand/Products.tsx`) — this file has a `FALLBACK` seed array. Confirm precisely when it's used: it must trigger **only** when the Supabase request itself fails/errors (network failure, misconfigured keys, etc.) — never when the request succeeds but simply returns zero active products. Those are two different situations ("can't reach the data" vs. "reached it, there's nothing there right now") and must not be handled the same way. If the current code can't tell them apart, fix that distinction specifically — don't remove the fallback outright, since a genuine connection-failure fallback is reasonable defensive UX; just make sure it isn't masking "database is actually fine but query is subtly wrong."
+- **FAQs, Blog posts, Hero carousel, Gallery, Media Center assets, Homepage sections (Our Story/Mission/Vision), Product categories** — grep each corresponding component for any hardcoded array of seed-looking data sitting alongside (or instead of) a real `supabase.from(...)` call. Where one exists, apply the same test as above: legitimate error-state fallback only, never a silent default that masks whether the live connection is actually working.
+- **Partners** (`PartnerContext.tsx`, `PartnerSetup.tsx`, admin `PartnersPage.tsx`) — these should have no fallback data at all; a partner site with no real database connection should show a clear error/loading-failed state, not any kind of placeholder partner content, since showing fake partner data to a real visitor would be actively misleading.
+- **Distributor dashboard, commissions, wallet, compensation-plan figures** — confirm none of these ever fall back to placeholder/demo numbers under any circumstances. A failed connection here must show an explicit error, never zero-filled or fake-looking data that could be mistaken for real figures.
+- Server-side (`server.ts`): confirm every route wrapped in `requireDb` genuinely fails closed (returns its configured 503 "Database not configured" response) when `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are missing, rather than silently falling back to any in-memory/local data path.
+
+Produce a short written list of every file where a fallback/hardcoded data path exists, what triggers it today, and whether that trigger condition is correct per the rule above. Fix only the ones that are wrong — don't remove legitimate error-state fallbacks.
+
+## 3. Verify against real seeded data
+
+A standalone-mode partner has already been seeded directly in the live database for this verification:
+
+```
+slug: standalone-test
+deployment_mode: standalone
+status: pending
+whatsapp_number: +237611111111
+pending_contact_name: Standalone Test Partner
+```
+
+With the real connection values from section 1 configured:
+
+1. Confirm `GET /api/admin/partners` (main site, authenticated as admin) returns this row, with `deployment_mode: "standalone"` and `status: "pending"` visible in the admin Partners list with the correct badge (per the earlier admin UI work).
+2. Set `PARTNER_SLUG=standalone-test` / `VITE_PARTNER_SLUG=standalone-test` in a local/dev run of the app and confirm `GET /api/partner-setup/status` returns `needsSetup: true` with the pre-filled `pending_contact_name`/`pending_contact_phone` — and that the app actually renders the setup wizard, pre-filled correctly, rather than the normal site or an error.
+3. Complete the wizard (any test values) and confirm `POST /api/partner-setup/complete` flips this row to `status: "active"`, `setup_completed_at` populated — then confirm the app reloads into the live site showing that data, all read from the real database, not anything local.
+4. This confirms, end to end, with real credentials against the real project, that the whole standalone-partner path is actually reading and writing the live Supabase database rather than any local state.
+
+## 4. QA checklist
+- [ ] Real connection values from section 1 successfully configured and the app connects (confirm via a simple query, e.g. the products list loading)
+- [ ] Full written audit from section 2 completed, listing every fallback/hardcoded data path found and its correctness
+- [ ] Any incorrect fallback trigger fixed (only where genuinely wrong, not removed wholesale)
+- [ ] The 4-step verification in section 3 completed against the real `standalone-test` row, not simulated
+- [ ] Confirm `SUPABASE_SERVICE_ROLE_KEY` and `SESSION_SECRET` were sourced properly (dashboard / freshly generated) and never hardcoded anywhere in the repo
+- [ ] Run existing lint/test suite
+
+Report back: the fallback-data audit list from section 2, and confirmation that the `standalone-test` partner was successfully read, set up, and activated against the real live database.
