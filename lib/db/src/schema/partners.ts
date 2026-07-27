@@ -15,6 +15,7 @@ export const partnersTable = pgTable("partners", {
   heroSubtitleEn: text("hero_subtitle_en"),
   heroSubtitleFr: text("hero_subtitle_fr"),
   heroImageUrl: text("hero_image_url"),
+  profileImageUrl: text("profile_image_url"),
   pendingContactName: text("pending_contact_name"),
   pendingContactPhone: text("pending_contact_phone"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

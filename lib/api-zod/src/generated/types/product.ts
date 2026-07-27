@@ -16,9 +16,12 @@ export interface Product {
   descriptionFr?: string | null;
   priceXaf: number;
   pvPoints: number;
-  category: string;
+  /** @nullable */
+  category?: string | null;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  videoUrl?: string | null;
   stock?: number;
   isActive: boolean;
 }

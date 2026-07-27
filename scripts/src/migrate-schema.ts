@@ -16,10 +16,15 @@ const migrations = [
      ADD COLUMN IF NOT EXISTS pv_points     integer NOT NULL DEFAULT 0,
      ADD COLUMN IF NOT EXISTS category      text,
      ADD COLUMN IF NOT EXISTS image_url     text,
+     ADD COLUMN IF NOT EXISTS video_url     text,
      ADD COLUMN IF NOT EXISTS stock         integer NOT NULL DEFAULT 0,
      ADD COLUMN IF NOT EXISTS is_active     boolean NOT NULL DEFAULT true,
      ADD COLUMN IF NOT EXISTS created_at    timestamptz NOT NULL DEFAULT now(),
      ADD COLUMN IF NOT EXISTS updated_at    timestamptz NOT NULL DEFAULT now()`,
+
+  // ── partners: add profile_image_url ────────────────────────────────────
+  `ALTER TABLE partners
+     ADD COLUMN IF NOT EXISTS profile_image_url text`,
 
   // ── testimonials: add missing columns ──────────────────────────────────
   `ALTER TABLE testimonials

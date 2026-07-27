@@ -72,6 +72,15 @@ Set in Vercel project settings → Environment Variables:
 
 _Populate as you build — explicit user instructions worth remembering across sessions._
 
+## Recent additions (July 2026)
+
+- **`videoUrl` on products** — DB column + Drizzle schema added; set a YouTube/Vimeo/direct-video URL on any product to have it show in the Videos section on partner sites
+- **Videos section** (`PartnerSite.tsx`) — appears when ≥1 active product has a `videoUrl`; products grouped by category; supports YouTube, Vimeo, and direct `.mp4` embeds
+- **Partner profile photo** — `profileImageUrl` DB column on partners; shown as circular avatar in the hero section of each partner site; uploaded via admin PartnerEdit page
+- **Profile photo upload** — `artifacts/songtai-partners/src/pages/admin/PartnerEdit.tsx` uses `useUpload` hook from `@workspace/object-storage-web`; files stored in Replit App Storage (`DEFAULT_OBJECT_STORAGE_BUCKET_ID` secret); objectPath is saved to `partners.profile_image_url`
+- **Storage API** — `POST /api/storage/uploads/request-url` (presigned GCS upload), `GET /api/storage/objects/:path` (serve stored files); see `artifacts/api-server/src/routes/storage.ts`
+- **Image URL helper** — `resolveImageUrl()` in PartnerSite and PartnerEdit: prepends `/api/storage` when path starts with `/objects/`, passes through external http URLs unchanged
+
 ## Gotchas
 
 - After changing `lib/api-spec/openapi.yaml`, always run `pnpm --filter @workspace/api-spec run codegen` before writing any routes or frontend code

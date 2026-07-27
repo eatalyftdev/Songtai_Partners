@@ -13,7 +13,8 @@ export interface ProductInput {
   descriptionFr?: string;
   priceXaf: number;
   pvPoints: number;
-  category: string;
+  category?: string;
   imageUrl?: string;
+  videoUrl?: string;
   stock?: number;
 }

@@ -30,6 +30,7 @@ export const ListPartnersResponseItem = zod.object({
   "heroSubtitleEn": zod.string().nullish(),
   "heroSubtitleFr": zod.string().nullish(),
   "heroImageUrl": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
   "createdAt": zod.string()
@@ -54,6 +55,7 @@ export const CreatePartnerBody = zod.object({
   "heroSubtitleEn": zod.string().optional(),
   "heroSubtitleFr": zod.string().optional(),
   "heroImageUrl": zod.string().optional(),
+  "profileImageUrl": zod.string().optional(),
   "pendingContactName": zod.string().optional(),
   "pendingContactPhone": zod.string().optional()
 })
@@ -69,6 +71,7 @@ export const CreatePartnerResponse = zod.object({
   "heroSubtitleEn": zod.string().nullish(),
   "heroSubtitleFr": zod.string().nullish(),
   "heroImageUrl": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
   "createdAt": zod.string()
@@ -104,6 +107,7 @@ export const GetPartnerBySlugResponse = zod.object({
   "heroSubtitleEn": zod.string().nullish(),
   "heroSubtitleFr": zod.string().nullish(),
   "heroImageUrl": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
   "createdAt": zod.string()
@@ -132,6 +136,7 @@ export const UpdatePartnerStatusResponse = zod.object({
   "heroSubtitleEn": zod.string().nullish(),
   "heroSubtitleFr": zod.string().nullish(),
   "heroImageUrl": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
   "createdAt": zod.string()
@@ -152,7 +157,8 @@ export const UpdatePartnerBody = zod.object({
   "heroTitleFr": zod.string().nullish(),
   "heroSubtitleEn": zod.string().nullish(),
   "heroSubtitleFr": zod.string().nullish(),
-  "heroImageUrl": zod.string().nullish()
+  "heroImageUrl": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish()
 })
 
 export const UpdatePartnerResponse = zod.object({
@@ -166,6 +172,7 @@ export const UpdatePartnerResponse = zod.object({
   "heroSubtitleEn": zod.string().nullish(),
   "heroSubtitleFr": zod.string().nullish(),
   "heroImageUrl": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
   "createdAt": zod.string()
@@ -190,6 +197,7 @@ export const DeletePartnerResponse = zod.object({
   "heroSubtitleEn": zod.string().nullish(),
   "heroSubtitleFr": zod.string().nullish(),
   "heroImageUrl": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
   "createdAt": zod.string()
@@ -207,8 +215,9 @@ export const ListProductsResponseItem = zod.object({
   "descriptionFr": zod.string().nullish(),
   "priceXaf": zod.number(),
   "pvPoints": zod.number(),
-  "category": zod.string(),
+  "category": zod.string().nullish(),
   "imageUrl": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
   "stock": zod.number().optional(),
   "isActive": zod.boolean()
 })
@@ -225,8 +234,9 @@ export const CreateProductBody = zod.object({
   "descriptionFr": zod.string().optional(),
   "priceXaf": zod.number(),
   "pvPoints": zod.number(),
-  "category": zod.string(),
+  "category": zod.string().optional(),
   "imageUrl": zod.string().optional(),
+  "videoUrl": zod.string().optional(),
   "stock": zod.number().optional()
 })
 
@@ -238,8 +248,9 @@ export const CreateProductResponse = zod.object({
   "descriptionFr": zod.string().nullish(),
   "priceXaf": zod.number(),
   "pvPoints": zod.number(),
-  "category": zod.string(),
+  "category": zod.string().nullish(),
   "imageUrl": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
   "stock": zod.number().optional(),
   "isActive": zod.boolean()
 })
@@ -259,8 +270,9 @@ export const UpdateProductBody = zod.object({
   "descriptionFr": zod.string().nullish(),
   "priceXaf": zod.number().optional(),
   "pvPoints": zod.number().optional(),
-  "category": zod.string().optional(),
+  "category": zod.string().nullish(),
   "imageUrl": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
   "stock": zod.number().optional(),
   "isActive": zod.boolean().optional()
 })
@@ -273,8 +285,9 @@ export const UpdateProductResponse = zod.object({
   "descriptionFr": zod.string().nullish(),
   "priceXaf": zod.number(),
   "pvPoints": zod.number(),
-  "category": zod.string(),
+  "category": zod.string().nullish(),
   "imageUrl": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
   "stock": zod.number().optional(),
   "isActive": zod.boolean()
 })
@@ -446,5 +459,35 @@ export const UpdateAboutResponse = zod.object({
   "imageUrl": zod.string().nullish(),
   "updatedAt": zod.string().optional()
 })
+
+
+/**
+ * @summary Request a presigned URL for file upload
+ */
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+})
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string(),
+  "objectPath": zod.string()
+})
+
+
+/**
+ * @summary Serve an uploaded object
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string()
+})
+
+export const GetStorageObjectResponse = zod.unknown()
 
 

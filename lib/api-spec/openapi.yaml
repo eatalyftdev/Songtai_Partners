@@ -22,6 +22,8 @@ tags:
     description: Frequently asked questions
   - name: about
     description: About / Our Story content
+  - name: storage
+    description: Object storage upload and serving
 
 paths:
   /healthz:
@@ -412,6 +414,63 @@ paths:
               schema:
                 $ref: "#/components/schemas/AboutContent"
 
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [storage]
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestUploadUrlBody"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestUploadUrlResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500":
+          description: Failed to generate upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /storage/objects/{objectPath}:
+    get:
+      operationId: getStorageObject
+      tags: [storage]
+      summary: Serve an uploaded object
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
 components:
   schemas:
 
@@ -445,6 +504,7 @@ components:
         heroSubtitleEn:        { type: ["string", "null"] }
         heroSubtitleFr:        { type: ["string", "null"] }
         heroImageUrl:          { type: ["string", "null"] }
+        profileImageUrl:       { type: ["string", "null"] }
         pendingContactName:    { type: ["string", "null"] }
         pendingContactPhone:   { type: ["string", "null"] }
         createdAt:             { type: string }
@@ -461,6 +521,7 @@ components:
         heroSubtitleEn:        { type: string }
         heroSubtitleFr:        { type: string }
         heroImageUrl:          { type: string }
+        profileImageUrl:       { type: string }
         pendingContactName:    { type: string }
         pendingContactPhone:   { type: string }
 
@@ -474,6 +535,7 @@ components:
         heroSubtitleEn:        { type: ["string", "null"] }
         heroSubtitleFr:        { type: ["string", "null"] }
         heroImageUrl:          { type: ["string", "null"] }
+        profileImageUrl:       { type: ["string", "null"] }
 
     PartnerStatusUpdate:
       type: object
@@ -638,3 +700,20 @@ components:
         visionEn:   { type: string }
         visionFr:   { type: string }
         imageUrl:   { type: string }
+
+    # ── Storage ────────────────────────────────────────────────────────────────
+
+    RequestUploadUrlBody:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:        { type: string, minLength: 1 }
+        size:        { type: integer, minimum: 1 }
+        contentType: { type: string, minLength: 1 }
+
+    RequestUploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:   { type: string }
+        objectPath:  { type: string }

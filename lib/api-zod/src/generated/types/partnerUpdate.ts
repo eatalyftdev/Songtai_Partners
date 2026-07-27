@@ -21,4 +21,6 @@ export interface PartnerUpdate {
   heroSubtitleFr?: string | null;
   /** @nullable */
   heroImageUrl?: string | null;
+  /** @nullable */
+  profileImageUrl?: string | null;
 }

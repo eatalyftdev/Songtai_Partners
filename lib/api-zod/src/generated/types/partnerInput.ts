@@ -19,6 +19,7 @@ export interface PartnerInput {
   heroSubtitleEn?: string;
   heroSubtitleFr?: string;
   heroImageUrl?: string;
+  profileImageUrl?: string;
   pendingContactName?: string;
   pendingContactPhone?: string;
 }

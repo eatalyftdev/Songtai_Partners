@@ -12,6 +12,7 @@ export const productsTable = pgTable("products", {
   pvPoints: integer("pv_points").notNull().default(0),
   category: text("category").notNull(),
   imageUrl: text("image_url"),
+  videoUrl: text("video_url"),
   stock: integer("stock").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

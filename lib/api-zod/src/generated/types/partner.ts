@@ -26,6 +26,8 @@ export interface Partner {
   /** @nullable */
   heroImageUrl?: string | null;
   /** @nullable */
+  profileImageUrl?: string | null;
+  /** @nullable */
   pendingContactName?: string | null;
   /** @nullable */
   pendingContactPhone?: string | null;

@@ -24,5 +24,7 @@ export * from './partnerUpdate';
 export * from './product';
 export * from './productInput';
 export * from './productUpdate';
+export * from './requestUploadUrlBody';
+export * from './requestUploadUrlResponse';
 export * from './testimonial';
 export * from './testimonialInput';

@@ -6,6 +6,7 @@ import testimonialsRouter from "./testimonials";
 import galleryRouter from "./gallery";
 import faqRouter from "./faq";
 import aboutRouter from "./about";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(testimonialsRouter);
 router.use(galleryRouter);
 router.use(faqRouter);
 router.use(aboutRouter);
+router.use(storageRouter);
 
 export default router;

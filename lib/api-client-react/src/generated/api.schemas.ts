@@ -41,6 +41,8 @@ export interface Partner {
   /** @nullable */
   heroImageUrl?: string | null;
   /** @nullable */
+  profileImageUrl?: string | null;
+  /** @nullable */
   pendingContactName?: string | null;
   /** @nullable */
   pendingContactPhone?: string | null;
@@ -60,6 +62,7 @@ export interface PartnerInput {
   heroSubtitleEn?: string;
   heroSubtitleFr?: string;
   heroImageUrl?: string;
+  profileImageUrl?: string;
   pendingContactName?: string;
   pendingContactPhone?: string;
 }
@@ -79,6 +82,8 @@ export interface PartnerUpdate {
   heroSubtitleFr?: string | null;
   /** @nullable */
   heroImageUrl?: string | null;
+  /** @nullable */
+  profileImageUrl?: string | null;
 }
 
 export type PartnerStatusUpdateStatus = typeof PartnerStatusUpdateStatus[keyof typeof PartnerStatusUpdateStatus];
@@ -111,9 +116,12 @@ export interface Product {
   descriptionFr?: string | null;
   priceXaf: number;
   pvPoints: number;
-  category: string;
+  /** @nullable */
+  category?: string | null;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  videoUrl?: string | null;
   stock?: number;
   isActive: boolean;
 }
@@ -125,8 +133,9 @@ export interface ProductInput {
   descriptionFr?: string;
   priceXaf: number;
   pvPoints: number;
-  category: string;
+  category?: string;
   imageUrl?: string;
+  videoUrl?: string;
   stock?: number;
 }
 
@@ -139,9 +148,12 @@ export interface ProductUpdate {
   descriptionFr?: string | null;
   priceXaf?: number;
   pvPoints?: number;
-  category?: string;
+  /** @nullable */
+  category?: string | null;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  videoUrl?: string | null;
   stock?: number;
   isActive?: boolean;
 }
@@ -231,5 +243,19 @@ export interface AboutContentInput {
   visionEn?: string;
   visionFr?: string;
   imageUrl?: string;
+}
+
+export interface RequestUploadUrlBody {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface RequestUploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
 }
 
