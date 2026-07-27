@@ -79,7 +79,7 @@ router.post("/partners", async (req, res) => {
   }
 
   // Validate slug format
-  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(parse.data.slug) && parse.data.slug.length < 2) {
+  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(parse.data.slug) || parse.data.slug.length < 2) {
     res.status(400).json({ error: "Slug must be lowercase letters, numbers, and hyphens only" });
     return;
   }
