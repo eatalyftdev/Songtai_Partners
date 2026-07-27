@@ -1,0 +1,50 @@
+# Claude Code Build Prompt — Fix TypeScript Build Failure in `src/routes/partners.ts` (Songtai_Partners monorepo)
+
+Paste this into Claude Code inside the `Songtai_Partners` repo (the pnpm monorepo — `@workspace/db`, `@workspace/api-zod`, `api-server` package — NOT the `songtai-life-main` Vite app).
+
+---
+
+## 0. Skill activation
+
+Activate **Backend** and **Quality/Testing** skills from the `jeffallan/claude-skills` framework before starting. State which skills you're activating.
+
+## 1. Read the log correctly — "Emit skipped" is not the error
+
+The Vercel build failed with:
+```
+Error: src/routes/partners.ts: Emit skipped
+```
+
+This is `tsc --build`'s summary line, printed for a file once it has one or more real type errors and the composite build has `noEmitOnError` in effect (the default for project-reference builds). **The actual diagnostic (file:line:column, error code, and message) is printed immediately above this line** — the pasted log was cut off right at this line, so the real cause hasn't been seen yet. Do not attempt a fix based on "Emit skipped" alone.
+
+## 2. Get the real error first
+
+1. Run the build locally, uncut: `pnpm run build` from the repo root (or specifically `cd artifacts/api-server && pnpm run build` if that's the affected workspace package), and capture full output.
+2. Since this uses `tsc --build ../../` (TypeScript project references across the monorepo), also check whether the error actually originates in a **different** workspace package that `src/routes/partners.ts` imports from (`@workspace/db` or `@workspace/api-zod` are the two workspace deps visible in the log) — a project-reference build can report the failure against the file that *uses* a broken type, not necessarily the package where the type actually changed. Run `pnpm run build` (or `tsc --build --verbose`) from the root to see the full dependency-order build output, not just the `api-server` package in isolation.
+3. Paste/capture the exact TS error code (e.g. `TS2339`, `TS2322`, `TS2307`, etc.) and message — this determines the fix category below.
+
+## 3. Likely causes for this specific setup (check in this order)
+
+Given the stack (Drizzle ORM + a shared `@workspace/db` schema package + a shared `@workspace/api-zod` validation package + Express route file), the most common causes of a route file failing to emit are:
+
+1. **Schema/type drift between `@workspace/db` and the route file** — if a Drizzle table/column was recently added, renamed, or retyped in `@workspace/db` (e.g. matching the `partners` table's recent additions: `deployment_mode`, `standalone_url`, `setup_completed_at`, `display_name`, `pending_contact_name/phone`, `domain_status`, etc.) but `src/routes/partners.ts` wasn't updated to match, or vice versa — TypeScript will fail to compile the mismatch. Compare the current Drizzle schema definition for `partners` against what the route file actually reads/writes.
+2. **Zod schema mismatch in `@workspace/api-zod`** — if request/response validation schemas for the partners routes were defined separately from the Drizzle types and one was updated without the other, a type mismatch between "what Zod expects" and "what Drizzle returns" is a common source of exactly this kind of emit failure.
+3. **A stale/missing type export** — if `@workspace/db` or `@workspace/api-zod` recently added a new exported type/enum (e.g. for `deployment_mode: 'shared_path' | 'standalone'`) but didn't rebuild its own `dist`/declaration output before `api-server` referenced it, the project-reference build can fail on an import that TypeScript can't resolve or that resolves to a stale shape. Run a full clean build from the root (`pnpm run build` at the repo root, not just the affected package) to rule this out before debugging the route file itself.
+4. **An actually-wrong line in the route file** — once the real error message is visible, if it's a straightforward local mistake (wrong property name, wrong argument type, missing await, etc.), fix it directly and precisely — don't broaden the fix beyond the specific reported line/error.
+
+## 4. Fix process
+1. Get the real, full error message per section 2.
+2. Match it to the likely-cause categories in section 3, starting with schema/type drift between workspace packages (most likely given this monorepo's structure), before assuming a simple local typo.
+3. Apply the minimal, targeted fix for the actual root cause.
+4. Rebuild the **whole monorepo** from the root (`pnpm run build`), not just the `api-server` package in isolation — a project-reference build fix needs to be verified in the same build order Vercel actually uses.
+5. Confirm zero TypeScript errors anywhere in the build output, not just that `partners.ts` specifically now emits.
+
+## 5. QA checklist
+- [ ] Full, uncut error message captured and reported (file:line:column, TS error code, message)
+- [ ] Root cause identified and categorized per section 3 — state which one it actually was
+- [ ] Fix applied is minimal and scoped to the actual cause
+- [ ] Full monorepo build (`pnpm run build` from root) succeeds with zero errors
+- [ ] Confirm no other workspace package now has a *new* type error introduced by this fix (since Drizzle/Zod schema fixes can ripple to other consumers of the same shared package)
+- [ ] Redeploy and confirm the Vercel build completes successfully end-to-end
+
+Report back the actual TypeScript error that was hiding behind "Emit skipped," which category it fell into, and confirmation of a clean full-monorepo build.
