@@ -320,11 +320,12 @@ export default function PartnerSite() {
                 );
               };
 
-              const groups = videoCategories.length > 0
-                ? videoCategories.map(cat => ({ label: cat, items: productsWithVideo.filter(p => p.category === cat) }))
-                : [{ label: null, items: productsWithVideo }];
+              const groups: Array<{ label: string | null; items: typeof productsWithVideo }> =
+                videoCategories.length > 0
+                  ? videoCategories.map(cat => ({ label: cat, items: productsWithVideo.filter((p: any) => p.category === cat) }))
+                  : [{ label: null, items: productsWithVideo }];
 
-              const uncategorised = productsWithVideo.filter(p => !p.category);
+              const uncategorised = productsWithVideo.filter((p: any) => !p.category);
               if (videoCategories.length > 0 && uncategorised.length > 0) {
                 groups.push({ label: t("Other Products", "Autres Produits"), items: uncategorised });
               }

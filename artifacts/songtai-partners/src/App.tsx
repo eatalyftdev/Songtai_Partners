@@ -11,6 +11,11 @@ import AdminDashboard from './pages/admin/Dashboard';
 import PartnersList from './pages/admin/PartnersList';
 import PartnerNew from './pages/admin/PartnerNew';
 import PartnerEdit from './pages/admin/PartnerEdit';
+import ProductsList from './pages/admin/ProductsList';
+import GalleryManage from './pages/admin/GalleryManage';
+import TestimonialsManage from './pages/admin/TestimonialsManage';
+import FaqManage from './pages/admin/FaqManage';
+import AboutEdit from './pages/admin/AboutEdit';
 import PartnerSite from './pages/partner/PartnerSite';
 
 const queryClient = new QueryClient({
@@ -32,6 +37,11 @@ function Router() {
       <Route path="/admin/partners" component={PartnersList} />
       <Route path="/admin/partners/new" component={PartnerNew} />
       <Route path="/admin/partners/:id" component={PartnerEdit} />
+      <Route path="/admin/products" component={ProductsList} />
+      <Route path="/admin/gallery" component={GalleryManage} />
+      <Route path="/admin/testimonials" component={TestimonialsManage} />
+      <Route path="/admin/faq" component={FaqManage} />
+      <Route path="/admin/about" component={AboutEdit} />
       
       {/* Public Partner Route */}
       <Route path="/p/:slug" component={PartnerSite} />
