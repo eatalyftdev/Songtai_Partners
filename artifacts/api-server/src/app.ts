@@ -55,8 +55,8 @@ const PUBLIC_GET_PREFIXES = [
   "/storage/objects/",
 ];
 
-// Matches /partners/<slug> but NOT /partners or /partners/stats
-const PARTNER_SLUG_RE = /^\/partners\/[^/]+$/;
+// Matches /partners/<slug> but NOT /partners, /partners/stats, or other admin sub-routes
+const PARTNER_SLUG_RE = /^\/partners\/(?!stats$)[^/]+$/;
 
 app.use(
   "/api",
