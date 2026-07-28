@@ -3,6 +3,15 @@
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
 
+@keyframes partner-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-18px); }
+}
+
+.animate-partner-float {
+  animation: partner-float 3.5s ease-in-out infinite;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

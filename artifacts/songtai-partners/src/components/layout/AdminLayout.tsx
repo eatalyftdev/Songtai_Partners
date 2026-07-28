@@ -1,16 +1,28 @@
 import { Link, useLocation } from "wouter";
-import { Users, LayoutDashboard, LogOut, HeartPulse, Package, Images, MessageSquareQuote, HelpCircle, BookOpen } from "lucide-react";
+import { Users, LayoutDashboard, LogOut, HeartPulse, Package, Images, MessageSquareQuote, HelpCircle, BookOpen, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
+  const { user, signOut } = useAuth();
+  const queryClient = useQueryClient();
+  const [signingOut, setSigningOut] = useState(false);
 
   // Force dark mode for admin
   useEffect(() => {
     document.documentElement.classList.add("dark");
     return () => document.documentElement.classList.remove("dark");
   }, []);
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await signOut();
+    queryClient.clear(); // clear cached data after sign-out
+    navigate("/admin/login");
+  };
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
@@ -32,7 +44,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <span className="font-serif font-bold text-lg tracking-wide">Songtai Admin</span>
           </Link>
         </div>
-        
+
         <nav className="flex-1 px-4 py-6 space-y-1">
           {navItems.map((item) => {
             const isActive = location === item.href || (item.href !== "/admin" && location.startsWith(item.href));
@@ -42,8 +54,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  isActive 
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                 )}
               >
@@ -53,15 +65,29 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        
-        <div className="p-4 border-t border-border">
-          <Link 
+
+        {/* User section */}
+        <div className="p-4 border-t border-border space-y-1">
+          {user && (
+            <div className="px-3 py-2 mb-1">
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            </div>
+          )}
+          <Link
             href="/"
             className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
           >
-            <LogOut className="h-4 w-4" />
-            Exit Admin
+            <ChevronDown className="h-4 w-4 rotate-90" />
+            View Site
           </Link>
+          <button
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            {signingOut ? "Signing out…" : "Sign Out"}
+          </button>
         </div>
       </aside>
 

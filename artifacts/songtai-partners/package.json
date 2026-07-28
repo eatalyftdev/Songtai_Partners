@@ -48,6 +48,7 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
+    "@supabase/supabase-js": "^2.49.0",
     "@workspace/api-client-react": "workspace:*",
     "@workspace/object-storage-web": "workspace:*",
     "class-variance-authority": "catalog:",

@@ -143,41 +143,70 @@ export default function PartnerSite() {
     <PartnerLayout partnerWhatsApp={partner.whatsappNumber}>
 
       {/* Hero Section */}
-      <section className="relative py-24 md:py-32 overflow-hidden">
-        {/* Soft background shape */}
+      <section className="relative py-16 md:py-24 lg:py-28 overflow-hidden">
+        {/* Background blobs */}
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4 pointer-events-none" />
 
-        <div className="container mx-auto px-4 relative z-10 flex flex-col items-center text-center">
-          {/* Partner profile photo */}
-          {profileImageUrl ? (
-            <div className="mb-6 w-24 h-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
-              <img src={profileImageUrl} alt={partner.slug} className="w-full h-full object-cover" />
-            </div>
-          ) : (
-            <div className="mb-6 w-24 h-24 rounded-full bg-primary/10 border-4 border-primary/20 flex items-center justify-center">
-              <User className="w-10 h-10 text-primary/40" />
-            </div>
-          )}
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col md:flex-row items-center gap-10 md:gap-14 lg:gap-20">
 
-          <Badge className="mb-6 bg-secondary/10 text-secondary hover:bg-secondary/20 border-none px-4 py-1.5 text-sm uppercase tracking-wider">
-            {t("Authorized Independent Partner", "Partenaire Indépendant Agréé")}
-          </Badge>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-foreground font-bold leading-tight max-w-4xl mb-6">
-            {heroTitle}
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10">
-            {heroSub}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button size="lg" className="rounded-full px-8 h-14 text-base shadow-lg shadow-primary/25" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}>
-              {t("Shop Products", "Acheter les Produits")}
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <a href={`https://wa.me/${partner.whatsappNumber?.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer">
-              <Button size="lg" variant="outline" className="rounded-full px-8 h-14 text-base bg-background/50 backdrop-blur">
-                {t("Contact Me Directly", "Contactez-moi Directement")}
-              </Button>
-            </a>
+            {/* Left: Text & CTAs */}
+            <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1">
+              <Badge className="mb-5 bg-secondary/10 text-secondary hover:bg-secondary/20 border-none px-4 py-1.5 text-sm uppercase tracking-wider">
+                {t("Authorized Independent Partner", "Partenaire Indépendant Agréé")}
+              </Badge>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-foreground font-bold leading-tight mb-5">
+                {heroTitle}
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-lg mb-10">
+                {heroSub}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  className="rounded-full px-8 h-14 text-base shadow-lg shadow-primary/25"
+                  onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  {t("Shop Products", "Acheter les Produits")}
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <a
+                  href={`https://wa.me/${partner.whatsappNumber?.replace(/[^0-9]/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button size="lg" variant="outline" className="rounded-full px-8 h-14 text-base bg-background/50 backdrop-blur w-full sm:w-auto">
+                    {t("Contact Me Directly", "Contactez-moi Directement")}
+                  </Button>
+                </a>
+              </div>
+            </div>
+
+            {/* Right: Partner Photo — large, floating */}
+            <div className="flex-shrink-0 order-1 md:order-2 flex items-center justify-center">
+              <div className="animate-partner-float relative">
+                {/* Glow ring behind the photo */}
+                <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-primary/25 to-secondary/25 blur-2xl scale-110 pointer-events-none" />
+                {profileImageUrl ? (
+                  <div className="relative w-52 h-64 sm:w-64 sm:h-80 md:w-72 md:h-96 lg:w-80 lg:h-[420px] rounded-[2.5rem] overflow-hidden border-4 border-primary/20 shadow-2xl shadow-primary/20">
+                    <img
+                      src={profileImageUrl}
+                      alt={partner.slug}
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </div>
+                ) : (
+                  <div className="relative w-52 h-64 sm:w-64 sm:h-80 md:w-72 md:h-96 lg:w-80 lg:h-[420px] rounded-[2.5rem] bg-gradient-to-br from-primary/10 via-background to-secondary/10 border-4 border-primary/20 shadow-2xl shadow-primary/20 flex flex-col items-center justify-center gap-3">
+                    <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
+                      <User className="w-10 h-10 md:w-14 md:h-14 text-primary/40" />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground px-4 text-center">{partner.slug}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       </section>

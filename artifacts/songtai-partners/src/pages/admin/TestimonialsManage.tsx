@@ -246,7 +246,7 @@ export default function TestimonialsManage() {
                         {imgUrl ? (
                           <img src={imgUrl} alt={t.authorName} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-xs font-bold text-muted-foreground">{t.authorName.charAt(0)}</span>
+                          <span className="text-xs font-bold text-muted-foreground">{t.authorName?.charAt(0) ?? '?'}</span>
                         )}
                       </div>
                       <div>

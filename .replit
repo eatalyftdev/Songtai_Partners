@@ -63,3 +63,5 @@ channel = "stable-25_05"
 
 [userenv.shared]
 SUPABASE_DATABASE_URL = "postgresql://postgres.auyjxchghtetxpiyecds:kvk6GuvlLn38PhLE@aws-0-eu-west-3.pooler.supabase.com:6543/postgres"
+SUPABASE_URL = "https://auyjxchghtetxpiyecds.supabase.co"
+VITE_SUPABASE_URL = "https://auyjxchghtetxpiyecds.supabase.co"
