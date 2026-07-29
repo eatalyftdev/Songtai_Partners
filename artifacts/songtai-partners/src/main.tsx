@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { setBaseUrl, setAuthTokenGetter } from '@workspace/api-client-react';
+import { setUploadAuthTokenGetter } from '@workspace/object-storage-web';
 import { supabase } from './lib/supabase';
 
 import App from './App';
@@ -12,11 +13,19 @@ if (import.meta.env.VITE_API_URL) {
   setBaseUrl(import.meta.env.VITE_API_URL);
 }
 
-// Attach the Supabase access token to every API request so the server can
-// verify identity on protected (write) endpoints.
-setAuthTokenGetter(async () => {
+// Shared token getter — used by both API client hooks AND the upload hook so
+// that every request to the server (including presigned URL generation) carries
+// the Supabase JWT.
+const getSupabaseToken = async () => {
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token ?? null;
-});
+};
+
+// Attach the Supabase access token to every generated API client request.
+setAuthTokenGetter(getSupabaseToken);
+
+// Attach the same token to presigned-URL requests made by useUpload().
+// Without this, POST /api/storage/uploads/request-url would return 401.
+setUploadAuthTokenGetter(getSupabaseToken);
 
 createRoot(document.getElementById('root')!).render(<App />);

@@ -1,0 +1,69 @@
+# Claude Code Build Prompt — Fix Failed Image Uploads (Products + Partner Photos)
+
+Paste this into Claude Code inside the `songtai-life-main` repo (the Vite + Supabase app — confirm this is actually where the failure is happening; see section 0.5 if it might instead be the separate `Songtai_Partners` monorepo, which uses Google Cloud Storage and would need a completely different diagnosis).
+
+---
+
+## 0. Skill activation
+
+Activate **Backend**, **Security**, and **Quality/Testing** skills from the `jeffallan/claude-skills` framework before starting. State which skills you're activating.
+
+## 0.5 Confirm which storage backend is actually failing
+
+There are two separate codebases in play here with two different storage backends:
+- `songtai-life-main` (Vite/Express/Supabase) uses **Supabase Storage** for all image uploads (`MediaUploader.tsx` client-side, plus the server-side `/api/partner-setup/upload-photo` route for the standalone partner wizard).
+- `Songtai_Partners` (the separate pnpm monorepo) uses **`@google-cloud/storage`** per its dependencies — a completely different upload mechanism, IAM/bucket-permission model, and failure surface.
+
+Confirm which one is actually producing the failure before applying anything below — if it's the GCS-based monorepo, everything in section 2 (Supabase RLS) is irrelevant and the investigation needs to instead cover GCS bucket IAM roles, signed URL generation/expiry, and CORS configuration on that bucket.
+
+## 1. Get the real error first — do not guess
+
+Reproduce an upload failure (a product image via the admin Products page, and a partner photo via the Partners admin form or the standalone setup wizard) and capture:
+- The exact browser console error
+- The exact network response: status code and full response body from the failed request (whether that's a direct `supabase.storage.from(...).upload()` call or a `POST /api/partner-setup/upload-photo` request)
+- Which specific upload path failed — client-side `MediaUploader` (used in admin Products/Partners/Hero Carousel/Gallery forms) vs. the server-side base64 route (used only in the standalone partner setup wizard) — these have different failure modes and need different fixes.
+
+## 2. Verified facts about the live Supabase Storage setup — start here
+
+These were confirmed directly against the live project, not assumed:
+
+- The `media` bucket exists, is `public: true`, with a **10MB file size limit** and **`allowed_mime_types: ["image/*", "video/*"]`** only. An upload of anything outside those constraints (e.g. a file over 10MB, or a non-image/video MIME type slipping through) will be rejected by the bucket itself — check whether the actual failing upload violates either of these before looking anywhere else.
+- Row Level Security on `storage.objects` for the `media` bucket requires **`is_admin()` to return true** for `INSERT`/`UPDATE`/`DELETE` (public `SELECT`/read is unrestricted). `is_admin()` is defined as:
+  ```sql
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role in ('admin', 'superadmin')
+  );
+  ```
+  This means **any direct client-side upload via `MediaUploader.tsx` requires a genuinely active, non-expired Supabase Auth session** (`auth.uid()` populated) for a user whose `profiles.role` is `admin` or `superadmin`. There is currently exactly **one** such account in the live database (`admin@songtailife.com`, role `superadmin`).
+
+Given this, check specifically:
+
+1. **Is the person attempting the upload actually logged in as `admin@songtailife.com` (or another account with `role` correctly set to `admin`/`superadmin`)?** If they're logged in under a different account, or a distributor-role account, uploads will fail by design — that's the RLS policy working correctly, not a bug, and the fix is either granting that account the right role or using the correct admin account.
+2. **Is the Supabase Auth session actually fresh at the moment of upload?** If the JWT has expired (long-idle admin session) and the client doesn't proactively refresh it before the storage call, `auth.uid()` can resolve to null mid-session, causing every upload to fail with a permissions error even though the person appears "logged in" in the UI. Check whether `MediaUploader.tsx` (or wherever the upload call originates) refreshes/validates the session before calling `.upload()`, and add that check if it's missing.
+3. **Is `MediaUploader` definitely using the same `supabase` client instance that holds the authenticated session** (imported from `src/lib/supabase.ts`), not a second/differently-configured client instance anywhere in the admin bundle? A second client instantiated without the persisted session would always upload as an anonymous user and always fail this RLS check.
+4. **For the standalone partner setup wizard specifically** (`POST /api/partner-setup/upload-photo`): this route uses the **service-role key server-side**, which bypasses RLS entirely — so if this specific path is failing, the cause is different from the client-side `MediaUploader` failures and is more likely: the 5MB size cap in that route (separate from the bucket's 10MB cap — check which limit is actually being hit), an unsupported `mimeType` value reaching the route, or `PARTNER_SLUG` not being configured in that deployment's environment (the route returns a 400 immediately if it's missing/invalid — confirm this isn't silently the actual cause).
+
+## 3. Once the real cause is confirmed, fix precisely that
+
+Don't broaden the fix beyond the confirmed cause. For example:
+- If it's a stale/expired session: add an explicit session-freshness check (`supabase.auth.getSession()` / refresh) immediately before the upload call in `MediaUploader.tsx`, and surface a clear "please log in again" message if refresh fails, instead of a cryptic storage permissions error.
+- If it's a role/account issue: that's a data fix (correct the account's role), not a code fix — don't loosen the RLS policy to work around a specific account being misconfigured.
+- If it's the bucket's size/MIME constraints: either raise the limit deliberately (if genuinely too restrictive for real photos being uploaded) or make the client-side validation match the bucket's actual constraints so the person gets a clear "file too large" / "unsupported type" message before even attempting the upload, not a confusing failure after the fact.
+- If it's the standalone route's own limits or a missing `PARTNER_SLUG`: fix that specific check, and make sure its error response is specific enough that this diagnosis wouldn't be needed next time (e.g. don't return a generic "Upload failed" for a config problem — say exactly what's missing).
+
+## 4. Non-negotiables
+- Do not weaken the `is_admin()` RLS policy on the `media` bucket to "fix" this — that policy is correct and intentional; the fix belongs in session handling, account configuration, or client-side validation, not in loosening who can write to storage.
+- Whatever the actual fix, confirm both failure surfaces (product image upload via admin, partner photo upload via admin form AND via the standalone setup wizard) are tested afterward — a fix for one path may not automatically cover the other, since they use genuinely different upload mechanisms (client-side RLS-gated vs. server-side service-role).
+
+## 5. QA checklist
+- [ ] Real browser console error + network response body captured for the actual failure (not assumed)
+- [ ] Confirmed which upload path failed: client-side `MediaUploader` (RLS-gated) vs. server-side standalone setup route (service-role, different limits)
+- [ ] Root cause identified against the checklist in section 2 — state which one it actually was
+- [ ] Fix applied is scoped to the confirmed cause only
+- [ ] Product image upload (admin Products page) succeeds and displays the resulting URL
+- [ ] Partner photo upload succeeds from BOTH the admin Partners form and the standalone setup wizard
+- [ ] A deliberately oversized file and a deliberately wrong file type each produce a clear, specific error message — not a silent failure or generic "upload failed"
+- [ ] Run existing lint/test suite, then deploy
+
+Report back the actual root cause found, which of the checklist items in section 2 it matched, and confirmation that both upload surfaces now work end-to-end with real files.
