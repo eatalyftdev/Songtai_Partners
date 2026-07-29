@@ -40,7 +40,8 @@ app.use(express.urlencoded({ extended: true }));
 //   /api/faq
 //   /api/about
 //   /api/partners/:slug  (exact slug look-up for active partners)
-//   /api/storage/objects/* (serve uploaded images)
+//
+// Images are now served directly from Supabase Storage CDN — no proxy route needed.
 //
 // Everything else — all mutations (POST/PATCH/DELETE) and admin-only reads
 // (/api/partners list, /api/partners/stats) — requires a valid Supabase JWT.
@@ -52,7 +53,6 @@ const PUBLIC_GET_PREFIXES = [
   "/gallery",
   "/faq",
   "/about",
-  "/storage/objects/",
 ];
 
 // Matches /partners/<slug> but NOT /partners, /partners/stats, or other admin sub-routes

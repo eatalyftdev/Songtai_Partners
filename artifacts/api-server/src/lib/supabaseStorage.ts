@@ -54,6 +54,7 @@ export async function createSignedUploadUrl(): Promise<SupabaseUploadResult> {
         'Content-Type': 'application/json',
         apikey: serviceRoleKey,
       },
+      body: JSON.stringify({}),
       signal: AbortSignal.timeout(15_000),
     },
   );
@@ -66,17 +67,18 @@ export async function createSignedUploadUrl(): Promise<SupabaseUploadResult> {
     );
   }
 
-  const data = (await res.json()) as { signedUrl?: string };
+  // Supabase Storage returns { url: "/object/upload/sign/...?token=...", token: "..." }
+  const data = (await res.json()) as { url?: string };
 
-  if (!data?.signedUrl) {
-    throw new Error('Supabase Storage: response missing signedUrl field');
+  if (!data?.url) {
+    throw new Error('Supabase Storage: response missing url field');
   }
 
-  // Supabase returns a path like /storage/v1/object/upload/sign/...?token=...
-  // Prepend the project URL to get a full URL the browser can PUT to.
-  const signedUploadUrl = data.signedUrl.startsWith('http')
-    ? data.signedUrl
-    : `${url}${data.signedUrl}`;
+  // The returned path is relative (e.g. /object/upload/sign/media/...?token=...)
+  // Prepend the project base URL + /storage/v1 to get the full upload URL.
+  const signedUploadUrl = data.url.startsWith('http')
+    ? data.url
+    : `${url}/storage/v1${data.url}`;
 
   const publicUrl = `${url}/storage/v1/object/public/${bucket}/${objectKey}`;
 
