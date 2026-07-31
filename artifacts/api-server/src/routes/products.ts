@@ -1,42 +1,79 @@
-import { Router, type Request, type Response } from "express";
-import { listMainDbProducts } from "../lib/mainDatabase";
+import { Router } from "express";
+import { eq, asc } from "drizzle-orm";
+import { db, productsTable, insertProductSchema } from "@workspace/db";
 
 const router = Router();
 
+// Partial schema for PATCH — all fields optional, derived from the table shape
+const updateProductSchema = insertProductSchema.partial();
+
 // GET /products
-//
-// Products are the main Songtai Life catalog — fetched live from the main
-// site's database on every request (see ../lib/mainDatabase.ts) rather than
-// stored as a separate local copy. Whatever is edited in the main Songtai
-// Life admin panel (name, price, images, video, active/inactive) appears
-// here automatically, with nothing to keep in sync by hand.
 router.get("/products", async (req, res) => {
   try {
-    const products = await listMainDbProducts();
-    return res.json(products);
+    const items = await db
+      .select()
+      .from(productsTable)
+      .orderBy(asc(productsTable.createdAt));
+    return res.json(items);
   } catch (err) {
-    req.log.error({ err }, "listProducts (main DB fetch) failed");
-    return res.status(502).json({
-      error: "Could not load products from the main Songtai Life database.",
-    });
+    req.log.error({ err }, "listProducts failed");
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// POST/PATCH/DELETE are intentionally disabled: products are managed
-// exclusively from the main Songtai Life admin panel now, not from this
-// app's own admin. Returning a clear, specific error here is deliberate —
-// silently accepting a write that would have no visible effect (since reads
-// always come live from the main database) would be far more confusing than
-// telling the admin exactly where to go instead.
-function disabled(_req: Request, res: Response) {
-  res.status(409).json({
-    error:
-      "Products are now managed from the main Songtai Life admin panel, not from this site. Please make changes there — they will appear here automatically.",
-  });
-}
+// POST /products
+router.post("/products", async (req, res) => {
+  const parse = insertProductSchema.safeParse(req.body);
+  if (!parse.success) return res.status(400).json({ error: parse.error.message });
 
-router.post("/products", disabled);
-router.patch("/products/:id", disabled);
-router.delete("/products/:id", disabled);
+  try {
+    const [item] = await db.insert(productsTable).values(parse.data).returning();
+    return res.status(201).json(item);
+  } catch (err) {
+    req.log.error({ err }, "createProduct failed");
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// PATCH /products/:id
+router.patch("/products/:id", async (req, res) => {
+  const { id } = req.params;
+  if (!id) return res.status(400).json({ error: "Missing id" });
+
+  const parse = updateProductSchema.safeParse(req.body);
+  if (!parse.success) return res.status(400).json({ error: parse.error.message });
+
+  // Strip undefined values so Drizzle doesn't try to set them
+  const updates = Object.fromEntries(
+    Object.entries(parse.data).filter(([, v]) => v !== undefined)
+  ) as typeof parse.data;
+
+  try {
+    const [item] = await db
+      .update(productsTable)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(productsTable.id, id))
+      .returning();
+    if (!item) return res.status(404).json({ error: "Product not found" });
+    return res.json(item);
+  } catch (err) {
+    req.log.error({ err }, "updateProduct failed");
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// DELETE /products/:id
+router.delete("/products/:id", async (req, res) => {
+  const { id } = req.params;
+  if (!id) return res.status(400).json({ error: "Missing id" });
+
+  try {
+    await db.delete(productsTable).where(eq(productsTable.id, id));
+    return res.status(204).end();
+  } catch (err) {
+    req.log.error({ err }, "deleteProduct failed");
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default router;
