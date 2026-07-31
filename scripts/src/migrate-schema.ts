@@ -22,9 +22,11 @@ const migrations = [
      ADD COLUMN IF NOT EXISTS created_at    timestamptz NOT NULL DEFAULT now(),
      ADD COLUMN IF NOT EXISTS updated_at    timestamptz NOT NULL DEFAULT now()`,
 
-  // ── partners: add profile_image_url ────────────────────────────────────
+  // ── partners: add profile_image_url + custom domain columns ───────────
   `ALTER TABLE partners
-     ADD COLUMN IF NOT EXISTS profile_image_url text`,
+     ADD COLUMN IF NOT EXISTS profile_image_url text,
+     ADD COLUMN IF NOT EXISTS custom_domain     text UNIQUE,
+     ADD COLUMN IF NOT EXISTS domain_status     text NOT NULL DEFAULT 'none'`,
 
   // ── testimonials: add missing columns ──────────────────────────────────
   `ALTER TABLE testimonials
