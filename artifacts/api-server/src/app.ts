@@ -40,11 +40,12 @@ app.use(express.urlencoded({ extended: true }));
 //   /api/faq
 //   /api/about
 //   /api/partners/:slug  (exact slug look-up for active partners)
+//   /api/auth/login      (POST — public by design)
+//   /api/auth/me         (GET — handled inside the route itself)
 //
-// Images are now served directly from Supabase Storage CDN — no proxy route needed.
-//
-// Everything else — all mutations (POST/PATCH/DELETE) and admin-only reads
-// (/api/partners list, /api/partners/stats) — requires a valid Supabase JWT.
+// Everything else — all mutations (POST/PATCH/DELETE on content) and
+// admin-only reads (/api/partners list, /api/partners/stats) — requires
+// a valid JWT issued by POST /api/auth/login.
 
 const PUBLIC_GET_PREFIXES = [
   "/healthz",
@@ -53,6 +54,8 @@ const PUBLIC_GET_PREFIXES = [
   "/gallery",
   "/faq",
   "/about",
+  "/auth",           // /auth/login (POST) and /auth/me (GET) handle auth internally
+  "/storage/objects", // serve stored files publicly
 ];
 
 // Matches /partners/<slug> but NOT /partners, /partners/stats, or other admin sub-routes
@@ -61,11 +64,17 @@ const PARTNER_SLUG_RE = /^\/partners\/(?!stats$)[^/]+$/;
 app.use(
   "/api",
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    // Allow POST /auth/login without a Bearer token
+    if (req.method === "POST" && req.path === "/auth/login") {
+      next();
+      return;
+    }
+
     // Allow all GET / HEAD / OPTIONS that match public paths
     if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
       const path = req.path; // relative to /api
       const isPublic =
-        PUBLIC_GET_PREFIXES.some((p) => path === p || path.startsWith(p)) ||
+        PUBLIC_GET_PREFIXES.some((p) => path === p || path.startsWith(p + "/") || path === p) ||
         PARTNER_SLUG_RE.test(path);
       if (isPublic) {
         next();

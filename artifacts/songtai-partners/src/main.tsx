@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { setBaseUrl, setAuthTokenGetter } from '@workspace/api-client-react';
 import { setUploadAuthTokenGetter } from '@workspace/object-storage-web';
-import { supabase } from './lib/supabase';
+import { getAdminToken } from './lib/auth';
 
 import App from './App';
 
@@ -13,19 +13,11 @@ if (import.meta.env.VITE_API_URL) {
   setBaseUrl(import.meta.env.VITE_API_URL);
 }
 
-// Shared token getter — used by both API client hooks AND the upload hook so
-// that every request to the server (including presigned URL generation) carries
-// the Supabase JWT.
-const getSupabaseToken = async () => {
-  const { data } = await supabase.auth.getSession();
-  return data.session?.access_token ?? null;
-};
+// Use the JWT stored in localStorage (set on admin login) for every
+// authenticated request — both API client hooks and presigned-URL uploads.
+const getToken = async (): Promise<string | null> => getAdminToken();
 
-// Attach the Supabase access token to every generated API client request.
-setAuthTokenGetter(getSupabaseToken);
-
-// Attach the same token to presigned-URL requests made by useUpload().
-// Without this, POST /api/storage/uploads/request-url would return 401.
-setUploadAuthTokenGetter(getSupabaseToken);
+setAuthTokenGetter(getToken);
+setUploadAuthTokenGetter(getToken);
 
 createRoot(document.getElementById('root')!).render(<App />);

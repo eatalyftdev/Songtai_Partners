@@ -68,7 +68,6 @@ export function PartnerLayout({ children, partnerWhatsApp }: { children: React.R
           </p>
           <div className="text-background/40 text-xs flex flex-col md:flex-row items-center justify-center gap-4">
             <span>© {new Date().getFullYear()} Songtai Life.</span>
-            <Link href="/admin" className="hover:text-background/80 transition-colors">Partner Access</Link>
           </div>
         </div>
       </footer>

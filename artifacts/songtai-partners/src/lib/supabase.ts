@@ -1,10 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('[auth] VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is not set — admin login will not work.');
-}
-
-export const supabase = createClient(supabaseUrl ?? '', supabaseAnonKey ?? '');
+// Supabase client removed.
+//
+// Admin authentication now uses the local API (POST /api/auth/login)
+// with JWTs stored in localStorage. See src/lib/auth.tsx.
+//
+// This file is kept as an empty module so that any stale imports don't
+// cause hard errors during the transition.
+export {};

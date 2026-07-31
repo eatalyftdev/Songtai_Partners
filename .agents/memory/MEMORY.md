@@ -1,3 +1,4 @@
 - [Supabase connection](supabase-connection.md) — use SUPABASE_DATABASE_URL (not DATABASE_URL) + ssl:{rejectUnauthorized:false}; pooler port 6543 required from Replit
 - [Schema migration approach](schema-migration.md) — drizzle-kit push needs TTY; use scripts/src/migrate-schema.ts instead for non-interactive ALTER/CREATE IF NOT EXISTS
 - [Supabase vs Replit DB split](supabase-vs-replit-db.md) — executeSql hits Replit's own PG, not Supabase; use lib/db node shell scripts for real app data
+- [Auth migration](auth-migration.md) — Supabase Auth replaced with custom JWT (SESSION_SECRET); admins table in local DB; default admin@songtailife.com / SongtaiAdmin2024!

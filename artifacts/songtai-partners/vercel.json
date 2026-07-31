@@ -1,44 +1,10 @@
 {
-  "buildCommand": "pnpm run build",
+  "buildCommand": "cd ../.. && pnpm --filter @workspace/songtai-partners run build",
   "outputDirectory": "dist/public",
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/index.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/_assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-  ],
+  "framework": null,
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": ":path*"
-    },
-    {
-      "source": "/((?!_next|_assets|public|favicon|robots|sitemap|[\\w-]+\\.\\w+).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]

@@ -4,6 +4,7 @@
  * never drops or truncates anything. Safe to re-run.
  */
 import { pool } from "@workspace/db";
+import bcrypt from "bcryptjs";
 
 const migrations = [
   // ── products: add missing columns ──────────────────────────────────────
@@ -73,6 +74,17 @@ const migrations = [
      image_url  text,
      updated_at timestamptz NOT NULL DEFAULT now()
    )`,
+
+  // ── admins: create if missing ───────────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS admins (
+     id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+     email           text NOT NULL UNIQUE,
+     password_hash   text NOT NULL,
+     name            text,
+     is_active       boolean NOT NULL DEFAULT true,
+     created_at      timestamptz NOT NULL DEFAULT now(),
+     last_login_at   timestamptz
+   )`,
 ];
 
 async function migrate() {
@@ -84,6 +96,23 @@ async function migrate() {
       await client.query(sql);
       console.log(`  ✓ ${label}`);
     }
+
+    // ── Seed default admin if none exists ─────────────────────────────────
+    const { rows } = await client.query("SELECT id FROM admins LIMIT 1");
+    if (rows.length === 0) {
+      const defaultPassword = "SongtaiAdmin2024!";
+      const passwordHash = bcrypt.hashSync(defaultPassword, 12);
+      await client.query(
+        `INSERT INTO admins (email, password_hash, name) VALUES ($1, $2, $3)
+         ON CONFLICT (email) DO NOTHING`,
+        ["admin@songtailife.com", passwordHash, "Super Admin"],
+      );
+      console.log("  ✓ Seeded default admin: admin@songtailife.com / SongtaiAdmin2024!");
+      console.log("    ⚠️  Change this password after first login!");
+    } else {
+      console.log("  ✓ Admin account already exists — skipping seed");
+    }
+
     console.log("Migration complete.");
   } finally {
     client.release();

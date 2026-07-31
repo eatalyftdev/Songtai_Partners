@@ -1,48 +1,87 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { Session, User } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+
+// ── Types ─────────────────────────────────────────────────────────────────
+
+export type AdminUser = { id: string; email: string; name: string | null };
 
 type AuthContextValue = {
-  session: Session | null;
-  user: User | null;
+  /** The currently signed-in admin, or null if not authenticated. */
+  user: AdminUser | null;
+  /** Alias kept for compatibility with ProtectedRoute which checks `session`. */
+  session: { user: AdminUser } | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signOut: () => Promise<void>;
+  signOut: () => void;
 };
+
+// ── Constants ─────────────────────────────────────────────────────────────
+
+const TOKEN_KEY = 'songtai_admin_token';
+
+function apiBase(): string {
+  // In development Vite proxies /api → the API server.
+  // In production the same path works because the SPA and API share a domain,
+  // or Vercel rewrites /api/* to the API server.
+  return '/api';
+}
+
+// ── Context ───────────────────────────────────────────────────────────────
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // On mount: verify the stored token against /api/auth/me
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
       setLoading(false);
-    });
+      return;
+    }
 
-    // Listen for auth state changes (sign in / sign out / token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
+    fetch(`${apiBase()}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: AdminUser | null) => setUser(data))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
   }, []);
 
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
-    return { error: null };
+    try {
+      const res = await fetch(`${apiBase()}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { error: data.error ?? 'Login failed' };
+      localStorage.setItem(TOKEN_KEY, data.token);
+      setUser(data.admin);
+      return { error: null };
+    } catch {
+      return { error: 'Network error — please try again' };
+    }
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const signOut = () => {
+    localStorage.removeItem(TOKEN_KEY);
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session: user ? { user } : null,
+        loading,
+        signIn,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -52,4 +91,10 @@ export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
   return ctx;
+}
+
+// ── Helper: get stored token for authenticated API calls ──────────────────
+
+export function getAdminToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
 }
