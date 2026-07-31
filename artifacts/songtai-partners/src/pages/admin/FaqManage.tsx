@@ -76,7 +76,7 @@ function FaqModal({
       setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const handleSave = () => {
-    const data = { ...form, category: form.category || null, sortOrder: Number(form.sortOrder) };
+    const data = { ...form, category: form.category || undefined, sortOrder: Number(form.sortOrder) };
     if (item) {
       updateMutation.mutate(data);
     } else {

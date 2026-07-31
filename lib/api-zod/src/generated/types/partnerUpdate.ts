@@ -5,6 +5,7 @@
  * Songtai Life Partners Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { PartnerUpdateDomainStatus } from './partnerUpdateDomainStatus';
 
 export interface PartnerUpdate {
   /** @nullable */
@@ -23,4 +24,8 @@ export interface PartnerUpdate {
   heroImageUrl?: string | null;
   /** @nullable */
   profileImageUrl?: string | null;
+  /** @nullable */
+  customDomain?: string | null;
+  /** @nullable */
+  domainStatus?: PartnerUpdateDomainStatus;
 }

@@ -8,6 +8,10 @@ import {
   useListGallery,
   useListFaq,
   useGetAbout,
+  type Product,
+  type Testimonial,
+  type GalleryImage,
+  type FaqItem,
 } from "@workspace/api-client-react";
 import { PartnerLayout } from "@/components/layout/PartnerLayout";
 import { Button } from "@/components/ui/button";
@@ -19,26 +23,30 @@ import {
   Leaf, Shield, Zap, TrendingUp, Users, Globe, Award, Sparkles,
   Clock, MessageCircle, Heart, Package
 } from "lucide-react";
-import { motion, useInView, useAnimation, AnimatePresence } from "framer-motion";
+import { motion, useInView, useAnimation, AnimatePresence, type Variants } from "framer-motion";
 
 // ── Animation helpers ──────────────────────────────────────────────────────
+// NOTE: these must be explicitly typed as `Variants` — without it, TypeScript
+// infers the `ease` cubic-bezier arrays as generic `number[]` instead of the
+// specific tuple type Framer Motion's types expect, which is what was causing
+// every motion.* element using these variants to fail to typecheck.
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
   visible: (delay = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] } }),
 };
 
-const fadeIn = {
+const fadeIn: Variants = {
   hidden: { opacity: 0 },
   visible: (delay = 0) => ({ opacity: 1, transition: { duration: 0.5, delay } }),
 };
 
-const stagger = {
+const stagger: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.1 } },
 };
 
-const cardItem = {
+const cardItem: Variants = {
   hidden: { opacity: 0, y: 30, scale: 0.97 },
   visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
 };
@@ -134,8 +142,13 @@ function resolveImageUrl(url: string | null | undefined): string | null {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function PartnerSite() {
-  const { slug } = useParams();
+interface PartnerSiteProps {
+  slugOverride?: string;
+}
+
+export default function PartnerSite(props: PartnerSiteProps) {
+  const { slug: routeSlug } = useParams();
+  const slug = props?.slugOverride ?? routeSlug;
   const { t } = useI18n();
 
   const { data: partner, isLoading: partnerLoading, isError } = useGetPartnerBySlug(slug || "", {
@@ -179,9 +192,9 @@ export default function PartnerSite() {
   const heroTitle = t(partner.heroTitleEn || defaultHeroTitleEn, partner.heroTitleFr || defaultHeroTitleFr);
   const heroSub = t(partner.heroSubtitleEn || defaultHeroSubEn, partner.heroSubtitleFr || defaultHeroSubFr);
 
-  const activeProducts = products?.filter((p) => p.isActive) ?? [];
-  const productsWithVideo = activeProducts.filter((p) => p.videoUrl);
-  const videoCategories = [...new Set(productsWithVideo.map((p) => p.category))].filter(Boolean) as string[];
+  const activeProducts = products?.filter((p: Product) => p.isActive) ?? [];
+  const productsWithVideo = activeProducts.filter((p: Product) => p.videoUrl);
+  const videoCategories = [...new Set(productsWithVideo.map((p: Product) => p.category))].filter(Boolean) as string[];
   const profileImageUrl = resolveImageUrl(partner.profileImageUrl);
   const waBase = `https://wa.me/${partner.whatsappNumber?.replace(/[^0-9]/g, "")}`;
 
@@ -388,7 +401,7 @@ export default function PartnerSite() {
             whileInView="visible" viewport={{ once: true, margin: "-60px" }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {activeProducts.map((product) => {
+            {activeProducts.map((product: Product) => {
               const waLink = `${waBase}?text=${encodeURIComponent(`Hello! I'm interested in buying: ${t(product.nameEn, product.nameFr)}`)}`;
               const imgUrl = resolveImageUrl(product.imageUrl);
               return (
@@ -679,7 +692,7 @@ export default function PartnerSite() {
                         </div>
                       )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {group.items.map((product) => <VideoProductCard key={product.id} product={product} />)}
+                        {group.items.map((product: Product) => <VideoProductCard key={product.id} product={product} />)}
                       </div>
                     </div>
                   ))}
@@ -761,7 +774,7 @@ export default function PartnerSite() {
               whileInView="visible" viewport={{ once: true, margin: "-60px" }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
             >
-              {testimonials.filter((tt) => tt.isActive && tt.authorName && tt.contentEn).map((testim, idx) => (
+              {testimonials.filter((tt: Testimonial) => tt.isActive && tt.authorName && tt.contentEn).map((testim: Testimonial, idx: number) => (
                 <motion.div key={testim.id} variants={cardItem}>
                   <motion.div
                     whileHover={{ y: -6, transition: { duration: 0.25 } }}
@@ -815,7 +828,7 @@ export default function PartnerSite() {
               whileInView="visible" viewport={{ once: true, margin: "-60px" }}
               className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
             >
-              {gallery.sort((a, b) => a.sortOrder - b.sortOrder).map((img, i) => (
+              {gallery.sort((a: GalleryImage, b: GalleryImage) => a.sortOrder - b.sortOrder).map((img: GalleryImage, i: number) => (
                 <motion.div key={img.id} variants={cardItem}
                   className={`group relative rounded-2xl overflow-hidden bg-muted aspect-square ${i === 0 ? "md:col-span-2 md:row-span-2" : ""}`}
                 >
@@ -940,7 +953,7 @@ export default function PartnerSite() {
               whileInView="visible" viewport={{ once: true, margin: "-60px" }}
               className="space-y-3"
             >
-              {faq.sort((a, b) => a.sortOrder - b.sortOrder).map((item, i) => (
+              {faq.sort((a: FaqItem, b: FaqItem) => a.sortOrder - b.sortOrder).map((item: FaqItem, i: number) => (
                 <motion.details
                   key={item.id}
                   variants={cardItem}

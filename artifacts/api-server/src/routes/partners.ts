@@ -6,12 +6,40 @@ import {
   UpdatePartnerBody,
   UpdatePartnerStatusBody,
   GetPartnerBySlugParams,
+  GetPartnerByDomainQueryParams,
   UpdatePartnerParams,
   UpdatePartnerStatusParams,
   DeletePartnerParams,
 } from "@workspace/api-zod";
 
 const router = Router();
+
+// GET /partners/by-domain?hostname=coachnelson.site — resolve a partner by
+// their verified custom domain (public). Must be registered BEFORE
+// /partners/:slug so "by-domain" is never mistaken for a literal slug value.
+router.get("/partners/by-domain", async (req, res) => {
+  const parse = GetPartnerByDomainQueryParams.safeParse(req.query);
+  if (!parse.success) {
+    return res.status(400).json({ error: "hostname query parameter is required" });
+  }
+
+  try {
+    const [partner] = await db
+      .select()
+      .from(partnersTable)
+      .where(eq(partnersTable.customDomain, parse.data.hostname.toLowerCase().trim()))
+      .limit(1);
+
+    if (!partner || partner.status !== "active" || partner.domainStatus !== "verified") {
+      return res.status(404).json({ error: "No active partner has a verified custom domain matching this hostname" });
+    }
+    return res.json(partner);
+  } catch (err) {
+    req.log.error({ err }, "getPartnerByDomain failed");
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
 // GET /partners — list all
 router.get("/partners", async (req, res) => {

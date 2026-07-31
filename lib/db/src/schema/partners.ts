@@ -18,6 +18,10 @@ export const partnersTable = pgTable("partners", {
   profileImageUrl: text("profile_image_url"),
   pendingContactName: text("pending_contact_name"),
   pendingContactPhone: text("pending_contact_phone"),
+  customDomain: text("custom_domain").unique(),
+  domainStatus: text("domain_status", { enum: ["none", "pending_verification", "verified", "failed"] })
+    .notNull()
+    .default("none"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

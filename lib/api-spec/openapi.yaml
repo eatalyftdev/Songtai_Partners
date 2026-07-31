@@ -123,6 +123,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /partners/by-domain:
+    get:
+      operationId: getPartnerByDomain
+      tags: [partners]
+      summary: Resolve a partner by custom domain hostname (public)
+      parameters:
+        - name: hostname
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Active partner with a verified custom domain matching this hostname
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "404":
+          description: No active partner has a verified custom domain matching this hostname
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   /partners/{id}/status:
     patch:
       operationId: updatePartnerStatus
@@ -507,6 +532,8 @@ components:
         profileImageUrl:       { type: ["string", "null"] }
         pendingContactName:    { type: ["string", "null"] }
         pendingContactPhone:   { type: ["string", "null"] }
+        customDomain:          { type: ["string", "null"], description: "A custom domain (e.g. coachnelson.site) pointed at this deployment for this partner" }
+        domainStatus:          { type: ["string", "null"], enum: [none, pending_verification, verified, failed, null], description: "Only 'verified' domains resolve to this partner via /partners/by-domain" }
         createdAt:             { type: string }
 
     PartnerInput:
@@ -536,6 +563,8 @@ components:
         heroSubtitleFr:        { type: ["string", "null"] }
         heroImageUrl:          { type: ["string", "null"] }
         profileImageUrl:       { type: ["string", "null"] }
+        customDomain:          { type: ["string", "null"] }
+        domainStatus:          { type: ["string", "null"], enum: [none, pending_verification, verified, failed, null] }
 
     PartnerStatusUpdate:
       type: object

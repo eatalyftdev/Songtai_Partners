@@ -1,81 +1,42 @@
-import { Router } from "express";
-import { eq } from "drizzle-orm";
-import { db, productsTable } from "@workspace/db";
-import {
-  CreateProductBody,
-  UpdateProductBody,
-  UpdateProductParams,
-  DeleteProductParams,
-} from "@workspace/api-zod";
+import { Router, type Request, type Response } from "express";
+import { listMainDbProducts } from "../lib/mainDatabase";
 
 const router = Router();
 
 // GET /products
+//
+// Products are the main Songtai Life catalog — fetched live from the main
+// site's database on every request (see ../lib/mainDatabase.ts) rather than
+// stored as a separate local copy. Whatever is edited in the main Songtai
+// Life admin panel (name, price, images, video, active/inactive) appears
+// here automatically, with nothing to keep in sync by hand.
 router.get("/products", async (req, res) => {
   try {
-    const products = await db
-      .select()
-      .from(productsTable)
-      .where(eq(productsTable.isActive, true))
-      .orderBy(productsTable.category);
+    const products = await listMainDbProducts();
     return res.json(products);
   } catch (err) {
-    req.log.error({ err }, "listProducts failed");
-    return res.status(500).json({ error: "Internal server error" });
+    req.log.error({ err }, "listProducts (main DB fetch) failed");
+    return res.status(502).json({
+      error: "Could not load products from the main Songtai Life database.",
+    });
   }
 });
 
-// POST /products
-router.post("/products", async (req, res) => {
-  const parse = CreateProductBody.safeParse(req.body);
-  if (!parse.success) return res.status(400).json({ error: parse.error.message });
+// POST/PATCH/DELETE are intentionally disabled: products are managed
+// exclusively from the main Songtai Life admin panel now, not from this
+// app's own admin. Returning a clear, specific error here is deliberate —
+// silently accepting a write that would have no visible effect (since reads
+// always come live from the main database) would be far more confusing than
+// telling the admin exactly where to go instead.
+function disabled(_req: Request, res: Response) {
+  res.status(409).json({
+    error:
+      "Products are now managed from the main Songtai Life admin panel, not from this site. Please make changes there — they will appear here automatically.",
+  });
+}
 
-  try {
-    const [product] = await db.insert(productsTable).values(parse.data as typeof productsTable.$inferInsert).returning();
-    return res.status(201).json(product);
-  } catch (err) {
-    req.log.error({ err }, "createProduct failed");
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// PATCH /products/:id
-router.patch("/products/:id", async (req, res) => {
-  const paramParse = UpdateProductParams.safeParse(req.params);
-  if (!paramParse.success) return res.status(400).json({ error: "Invalid id" });
-
-  const bodyParse = UpdateProductBody.safeParse(req.body);
-  if (!bodyParse.success) return res.status(400).json({ error: bodyParse.error.message });
-
-  try {
-    const updateData = Object.fromEntries(
-      Object.entries(bodyParse.data).filter(([, v]) => v != null),
-    ) as Partial<typeof productsTable.$inferInsert>;
-    const [product] = await db
-      .update(productsTable)
-      .set(updateData)
-      .where(eq(productsTable.id, paramParse.data.id))
-      .returning();
-    if (!product) return res.status(404).json({ error: "Product not found" });
-    return res.json(product);
-  } catch (err) {
-    req.log.error({ err }, "updateProduct failed");
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// DELETE /products/:id
-router.delete("/products/:id", async (req, res) => {
-  const parse = DeleteProductParams.safeParse(req.params);
-  if (!parse.success) return res.status(400).json({ error: "Invalid id" });
-
-  try {
-    await db.delete(productsTable).where(eq(productsTable.id, parse.data.id));
-    return res.status(204).end();
-  } catch (err) {
-    req.log.error({ err }, "deleteProduct failed");
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
+router.post("/products", disabled);
+router.patch("/products/:id", disabled);
+router.delete("/products/:id", disabled);
 
 export default router;

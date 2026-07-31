@@ -33,6 +33,8 @@ export const ListPartnersResponseItem = zod.object({
   "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
+  "customDomain": zod.string().nullish().describe('A custom domain (e.g. coachnelson.site) pointed at this deployment for this partner'),
+  "domainStatus": zod.union([zod.literal('none'),zod.literal('pending_verification'),zod.literal('verified'),zod.literal('failed'),zod.literal(null)]).nullish().describe('Only \'verified\' domains resolve to this partner via \/partners\/by-domain'),
   "createdAt": zod.string()
 })
 export const ListPartnersResponse = zod.array(ListPartnersResponseItem)
@@ -74,6 +76,8 @@ export const CreatePartnerResponse = zod.object({
   "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
+  "customDomain": zod.string().nullish().describe('A custom domain (e.g. coachnelson.site) pointed at this deployment for this partner'),
+  "domainStatus": zod.union([zod.literal('none'),zod.literal('pending_verification'),zod.literal('verified'),zod.literal('failed'),zod.literal(null)]).nullish().describe('Only \'verified\' domains resolve to this partner via \/partners\/by-domain'),
   "createdAt": zod.string()
 })
 
@@ -110,6 +114,35 @@ export const GetPartnerBySlugResponse = zod.object({
   "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
+  "customDomain": zod.string().nullish().describe('A custom domain (e.g. coachnelson.site) pointed at this deployment for this partner'),
+  "domainStatus": zod.union([zod.literal('none'),zod.literal('pending_verification'),zod.literal('verified'),zod.literal('failed'),zod.literal(null)]).nullish().describe('Only \'verified\' domains resolve to this partner via \/partners\/by-domain'),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Resolve a partner by custom domain hostname (public)
+ */
+export const GetPartnerByDomainQueryParams = zod.object({
+  "hostname": zod.coerce.string()
+})
+
+export const GetPartnerByDomainResponse = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "status": zod.enum(['pending', 'active', 'suspended']),
+  "whatsappNumber": zod.string().nullish(),
+  "contactEmail": zod.string().nullish(),
+  "heroTitleEn": zod.string().nullish(),
+  "heroTitleFr": zod.string().nullish(),
+  "heroSubtitleEn": zod.string().nullish(),
+  "heroSubtitleFr": zod.string().nullish(),
+  "heroImageUrl": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
+  "pendingContactName": zod.string().nullish(),
+  "pendingContactPhone": zod.string().nullish(),
+  "customDomain": zod.string().nullish().describe('A custom domain (e.g. coachnelson.site) pointed at this deployment for this partner'),
+  "domainStatus": zod.union([zod.literal('none'),zod.literal('pending_verification'),zod.literal('verified'),zod.literal('failed'),zod.literal(null)]).nullish().describe('Only \'verified\' domains resolve to this partner via \/partners\/by-domain'),
   "createdAt": zod.string()
 })
 
@@ -139,6 +172,8 @@ export const UpdatePartnerStatusResponse = zod.object({
   "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
+  "customDomain": zod.string().nullish().describe('A custom domain (e.g. coachnelson.site) pointed at this deployment for this partner'),
+  "domainStatus": zod.union([zod.literal('none'),zod.literal('pending_verification'),zod.literal('verified'),zod.literal('failed'),zod.literal(null)]).nullish().describe('Only \'verified\' domains resolve to this partner via \/partners\/by-domain'),
   "createdAt": zod.string()
 })
 
@@ -158,7 +193,9 @@ export const UpdatePartnerBody = zod.object({
   "heroSubtitleEn": zod.string().nullish(),
   "heroSubtitleFr": zod.string().nullish(),
   "heroImageUrl": zod.string().nullish(),
-  "profileImageUrl": zod.string().nullish()
+  "profileImageUrl": zod.string().nullish(),
+  "customDomain": zod.string().nullish(),
+  "domainStatus": zod.union([zod.literal('none'),zod.literal('pending_verification'),zod.literal('verified'),zod.literal('failed'),zod.literal(null)]).nullish()
 })
 
 export const UpdatePartnerResponse = zod.object({
@@ -175,6 +212,8 @@ export const UpdatePartnerResponse = zod.object({
   "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
+  "customDomain": zod.string().nullish().describe('A custom domain (e.g. coachnelson.site) pointed at this deployment for this partner'),
+  "domainStatus": zod.union([zod.literal('none'),zod.literal('pending_verification'),zod.literal('verified'),zod.literal('failed'),zod.literal(null)]).nullish().describe('Only \'verified\' domains resolve to this partner via \/partners\/by-domain'),
   "createdAt": zod.string()
 })
 
@@ -200,6 +239,8 @@ export const DeletePartnerResponse = zod.object({
   "profileImageUrl": zod.string().nullish(),
   "pendingContactName": zod.string().nullish(),
   "pendingContactPhone": zod.string().nullish(),
+  "customDomain": zod.string().nullish().describe('A custom domain (e.g. coachnelson.site) pointed at this deployment for this partner'),
+  "domainStatus": zod.union([zod.literal('none'),zod.literal('pending_verification'),zod.literal('verified'),zod.literal('failed'),zod.literal(null)]).nullish().describe('Only \'verified\' domains resolve to this partner via \/partners\/by-domain'),
   "createdAt": zod.string()
 })
 

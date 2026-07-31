@@ -27,6 +27,7 @@ import type {
   FaqItemInput,
   GalleryImage,
   GalleryImageInput,
+  GetPartnerByDomainParams,
   HealthStatus,
   Partner,
   PartnerInput,
@@ -436,6 +437,90 @@ export function useGetPartnerBySlug<TData = Awaited<ReturnType<typeof getPartner
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetPartnerBySlugQueryOptions(slug,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetPartnerByDomainUrl = (params: GetPartnerByDomainParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/partners/by-domain?${stringifiedParams}` : `/api/partners/by-domain`
+}
+
+/**
+ * @summary Resolve a partner by custom domain hostname (public)
+ */
+export const getPartnerByDomain = async (params: GetPartnerByDomainParams, options?: RequestInit): Promise<Partner> => {
+
+  return customFetch<Partner>(getGetPartnerByDomainUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPartnerByDomainQueryKey = (params?: GetPartnerByDomainParams,) => {
+    return [
+    `/api/partners/by-domain`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetPartnerByDomainQueryOptions = <TData = Awaited<ReturnType<typeof getPartnerByDomain>>, TError = ErrorType<ApiError>>(params: GetPartnerByDomainParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPartnerByDomain>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPartnerByDomainQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPartnerByDomain>>> = ({ signal }) => getPartnerByDomain(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPartnerByDomain>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPartnerByDomainQueryResult = NonNullable<Awaited<ReturnType<typeof getPartnerByDomain>>>
+export type GetPartnerByDomainQueryError = ErrorType<ApiError>
+
+
+/**
+ * @summary Resolve a partner by custom domain hostname (public)
+ */
+
+export function useGetPartnerByDomain<TData = Awaited<ReturnType<typeof getPartnerByDomain>>, TError = ErrorType<ApiError>>(
+ params: GetPartnerByDomainParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPartnerByDomain>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPartnerByDomainQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -396,7 +396,7 @@ export default function ProductsList() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {products.map((product) => {
+            {products.map((product: Product) => {
               const imgUrl = resolveImageUrl(product.imageUrl);
               return (
                 <Card
@@ -446,8 +446,8 @@ export default function ProductsList() {
                         {product.priceXaf.toLocaleString()} FCFA
                       </span>
                       <span>{product.pvPoints} PV</span>
-                      <span className={product.stock > 0 ? "text-green-500" : "text-red-500"}>
-                        {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                      <span className={(product.stock ?? 0) > 0 ? "text-green-500" : "text-red-500"}>
+                        {(product.stock ?? 0) > 0 ? `${product.stock} in stock` : "Out of stock"}
                       </span>
                     </div>
 

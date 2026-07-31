@@ -46,7 +46,7 @@ export async function createSignedUploadUrl(): Promise<SupabaseUploadResult> {
   const objectKey = `uploads/${randomUUID()}`;
 
   const res = await fetch(
-    `${url}/storage/v1/object/sign/upload/${bucket}/${objectKey}`,
+    `${url}/storage/v1/object/upload/sign/${bucket}/${objectKey}`,
     {
       method: 'POST',
       headers: {

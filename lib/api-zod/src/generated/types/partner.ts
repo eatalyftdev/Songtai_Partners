@@ -5,6 +5,7 @@
  * Songtai Life Partners Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { PartnerDomainStatus } from './partnerDomainStatus';
 import type { PartnerStatus } from './partnerStatus';
 
 export interface Partner {
@@ -31,5 +32,15 @@ export interface Partner {
   pendingContactName?: string | null;
   /** @nullable */
   pendingContactPhone?: string | null;
+  /**
+     * A custom domain (e.g. coachnelson.site) pointed at this deployment for this partner
+     * @nullable
+     */
+  customDomain?: string | null;
+  /**
+     * Only 'verified' domains resolve to this partner via /partners/by-domain
+     * @nullable
+     */
+  domainStatus?: PartnerDomainStatus;
   createdAt: string;
 }

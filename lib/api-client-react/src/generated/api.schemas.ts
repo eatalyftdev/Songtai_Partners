@@ -22,6 +22,20 @@ export const PartnerStatus = {
   suspended: 'suspended',
 } as const;
 
+/**
+ * Only 'verified' domains resolve to this partner via /partners/by-domain
+ * @nullable
+ */
+export type PartnerDomainStatus = typeof PartnerDomainStatus[keyof typeof PartnerDomainStatus] | null;
+
+
+export const PartnerDomainStatus = {
+  none: 'none',
+  pending_verification: 'pending_verification',
+  verified: 'verified',
+  failed: 'failed',
+} as const;
+
 export interface Partner {
   id: string;
   slug: string;
@@ -46,6 +60,16 @@ export interface Partner {
   pendingContactName?: string | null;
   /** @nullable */
   pendingContactPhone?: string | null;
+  /**
+     * A custom domain (e.g. coachnelson.site) pointed at this deployment for this partner
+     * @nullable
+     */
+  customDomain?: string | null;
+  /**
+     * Only 'verified' domains resolve to this partner via /partners/by-domain
+     * @nullable
+     */
+  domainStatus?: PartnerDomainStatus;
   createdAt: string;
 }
 
@@ -67,6 +91,19 @@ export interface PartnerInput {
   pendingContactPhone?: string;
 }
 
+/**
+ * @nullable
+ */
+export type PartnerUpdateDomainStatus = typeof PartnerUpdateDomainStatus[keyof typeof PartnerUpdateDomainStatus] | null;
+
+
+export const PartnerUpdateDomainStatus = {
+  none: 'none',
+  pending_verification: 'pending_verification',
+  verified: 'verified',
+  failed: 'failed',
+} as const;
+
 export interface PartnerUpdate {
   /** @nullable */
   whatsappNumber?: string | null;
@@ -84,6 +121,10 @@ export interface PartnerUpdate {
   heroImageUrl?: string | null;
   /** @nullable */
   profileImageUrl?: string | null;
+  /** @nullable */
+  customDomain?: string | null;
+  /** @nullable */
+  domainStatus?: PartnerUpdateDomainStatus;
 }
 
 export type PartnerStatusUpdateStatus = typeof PartnerStatusUpdateStatus[keyof typeof PartnerStatusUpdateStatus];
@@ -258,4 +299,8 @@ export interface RequestUploadUrlResponse {
   uploadURL: string;
   objectPath: string;
 }
+
+export type GetPartnerByDomainParams = {
+hostname: string;
+};
 
