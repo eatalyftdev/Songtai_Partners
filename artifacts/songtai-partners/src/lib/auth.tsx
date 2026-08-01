@@ -19,9 +19,11 @@ type AuthContextValue = {
 const TOKEN_KEY = 'songtai_admin_token';
 
 function apiBase(): string {
-  // In development Vite proxies /api → the API server.
-  // In production the same path works because the SPA and API share a domain,
-  // or Vercel rewrites /api/* to the API server.
+  // VITE_API_URL: the API server origin (e.g. https://api.example.com).
+  // Set this in deployment when the frontend and API are on different domains.
+  // In dev, leave it unset — Vite proxies /api → localhost:8080 via vite.config.ts.
+  const origin = import.meta.env.VITE_API_URL as string | undefined;
+  if (origin) return origin.replace(/\/+$/, '') + '/api';
   return '/api';
 }
 

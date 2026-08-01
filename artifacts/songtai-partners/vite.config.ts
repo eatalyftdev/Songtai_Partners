@@ -61,7 +61,10 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        // In dev: API runs on localhost:8080.
+        // In deployment: set API_URL to the API server's deployed URL so the
+        // Vite dev-server proxy forwards /api requests to the right container.
+        target: process.env.API_URL || 'http://localhost:8080',
         changeOrigin: true,
       },
     },
