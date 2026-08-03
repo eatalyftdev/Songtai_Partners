@@ -7,11 +7,13 @@ import {
   useListTestimonials,
   useListGallery,
   useListFaq,
+  useListBlogPosts,
   useGetAbout,
   type Product,
   type Testimonial,
   type GalleryImage,
   type FaqItem,
+  type BlogPost,
 } from "@workspace/api-client-react";
 import { PartnerLayout } from "@/components/layout/PartnerLayout";
 import { Button } from "@/components/ui/button";
@@ -21,7 +23,7 @@ import { useI18n } from "@/lib/i18n";
 import {
   Loader2, ArrowRight, Star, ChevronDown, CheckCircle2, PlayCircle, User,
   Leaf, Shield, Zap, TrendingUp, Users, Globe, Award, Sparkles,
-  Clock, MessageCircle, Heart, Package
+  Clock, MessageCircle, Heart, Package, BookOpen
 } from "lucide-react";
 import { motion, useInView, useAnimation, AnimatePresence, type Variants } from "framer-motion";
 
@@ -158,6 +160,7 @@ export default function PartnerSite(props: PartnerSiteProps) {
   const { data: testimonials } = useListTestimonials();
   const { data: gallery } = useListGallery();
   const { data: faq } = useListFaq();
+  const { data: blogPosts = [] } = useListBlogPosts();
   const { data: about } = useGetAbout();
 
   if (partnerLoading) {
@@ -969,6 +972,75 @@ export default function PartnerSite(props: PartnerSiteProps) {
                     {t(item.answerEn, item.answerFr)}
                   </div>
                 </motion.details>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Blog / Articles ───────────────────────────────────────────────── */}
+      {blogPosts.length > 0 && (
+        <section className="py-20 bg-muted/20">
+          <div className="container mx-auto px-4 max-w-5xl">
+            <motion.div
+              variants={fadeUp} custom={0} initial="hidden"
+              whileInView="visible" viewport={{ once: true, margin: "-60px" }}
+              className="text-center mb-14"
+            >
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-4">
+                <BookOpen className="h-4 w-4" />
+                {t("Articles & Insights", "Articles & Analyses")}
+              </div>
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-4">
+                {t("Learn More About Wellness", "En Savoir Plus sur le Bien-être")}
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                {t(
+                  "Explore our latest articles on health, wellness, and the science behind our products.",
+                  "Explorez nos derniers articles sur la santé, le bien-être et la science derrière nos produits."
+                )}
+              </p>
+            </motion.div>
+            <motion.div
+              variants={stagger} initial="hidden"
+              whileInView="visible" viewport={{ once: true, margin: "-60px" }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
+              {blogPosts.map((post: BlogPost) => (
+                <motion.div key={post.id} variants={cardItem}>
+                  <Card className="overflow-hidden h-full flex flex-col border-border/60 hover:border-primary/30 hover:shadow-lg transition-all duration-300 group">
+                    {post.imageUrl && (
+                      <div className="aspect-video overflow-hidden bg-muted">
+                        <img
+                          src={post.imageUrl}
+                          alt={t(post.title, post.titleFr ?? post.title)}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                    )}
+                    <CardContent className="flex flex-col flex-1 p-5 gap-3">
+                      {post.category && (
+                        <Badge variant="secondary" className="self-start text-xs">
+                          {post.category}
+                        </Badge>
+                      )}
+                      <h3 className="font-serif font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
+                        {t(post.title, post.titleFr ?? post.title)}
+                      </h3>
+                      {post.excerpt && (
+                        <p className="text-muted-foreground text-sm leading-relaxed flex-1">
+                          {post.excerpt}
+                        </p>
+                      )}
+                      {post.author && (
+                        <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+                          <User className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">{post.author}</span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
             </motion.div>
           </div>

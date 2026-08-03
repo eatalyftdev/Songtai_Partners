@@ -54,6 +54,7 @@ const PUBLIC_GET_PREFIXES = [
   "/gallery",
   "/faq",
   "/about",
+  "/blog-posts",
   "/auth",           // /auth/login (POST) and /auth/me (GET) handle auth internally
   "/storage/objects", // serve stored files publicly
 ];

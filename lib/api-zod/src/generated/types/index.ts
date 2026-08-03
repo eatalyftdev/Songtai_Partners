@@ -9,6 +9,7 @@
 export * from './aboutContent';
 export * from './aboutContentInput';
 export * from './apiError';
+export * from './blogPost';
 export * from './faqItem';
 export * from './faqItemInput';
 export * from './galleryImage';

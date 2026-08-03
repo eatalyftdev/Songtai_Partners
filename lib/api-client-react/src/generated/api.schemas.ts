@@ -286,6 +286,27 @@ export interface AboutContentInput {
   imageUrl?: string;
 }
 
+export interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  /** @nullable */
+  titleFr?: string | null;
+  body: string;
+  /** @nullable */
+  excerpt?: string | null;
+  /** @nullable */
+  author?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
+  /** @nullable */
+  category?: string | null;
+  status: string;
+  /** @nullable */
+  publishedAt?: string | null;
+  createdAt?: string;
+}
+
 export interface RequestUploadUrlBody {
   /** @minLength 1 */
   name: string;

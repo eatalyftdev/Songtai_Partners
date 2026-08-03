@@ -5,3 +5,4 @@ export * from "./testimonials";
 export * from "./gallery";
 export * from "./faq";
 export * from "./about";
+export * from "./blog-posts";

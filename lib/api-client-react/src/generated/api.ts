@@ -23,6 +23,7 @@ import type {
   AboutContent,
   AboutContentInput,
   ApiError,
+  BlogPost,
   FaqItem,
   FaqItemInput,
   GalleryImage,
@@ -1630,6 +1631,83 @@ export const useUpdateAbout = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getUpdateAboutMutationOptions(options));
     }
+
+export const getListBlogPostsUrl = () => {
+
+
+
+
+  return `/api/blog-posts`
+}
+
+/**
+ * @summary List published blog posts ordered newest first
+ */
+export const listBlogPosts = async ( options?: RequestInit): Promise<BlogPost[]> => {
+
+  return customFetch<BlogPost[]>(getListBlogPostsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBlogPostsQueryKey = () => {
+    return [
+    `/api/blog-posts`
+    ] as const;
+    }
+
+
+export const getListBlogPostsQueryOptions = <TData = Awaited<ReturnType<typeof listBlogPosts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBlogPosts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBlogPostsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBlogPosts>>> = ({ signal }) => listBlogPosts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBlogPosts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBlogPostsQueryResult = NonNullable<Awaited<ReturnType<typeof listBlogPosts>>>
+export type ListBlogPostsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List published blog posts ordered newest first
+ */
+
+export function useListBlogPosts<TData = Awaited<ReturnType<typeof listBlogPosts>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBlogPosts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBlogPostsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getRequestUploadUrlUrl = () => {
 

@@ -8,6 +8,7 @@ import galleryRouter from "./gallery";
 import faqRouter from "./faq";
 import aboutRouter from "./about";
 import storageRouter from "./storage";
+import blogPostsRouter from "./blog-posts";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(galleryRouter);
 router.use(faqRouter);
 router.use(aboutRouter);
 router.use(storageRouter);
+router.use(blogPostsRouter);
 
 export default router;

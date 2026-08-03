@@ -74,6 +74,22 @@ const migrations = [
      updated_at timestamptz NOT NULL DEFAULT now()
    )`,
 
+  // ── blog_posts: create if missing ──────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS blog_posts (
+     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+     slug         text NOT NULL UNIQUE,
+     title        text NOT NULL,
+     title_fr     text,
+     body         text NOT NULL,
+     excerpt      text,
+     author       text,
+     image        text,
+     category     text,
+     status       text NOT NULL DEFAULT 'draft',
+     published_at timestamptz,
+     created_at   timestamptz NOT NULL DEFAULT now()
+   )`,
+
   // ── admins: create if missing ───────────────────────────────────────────
   `CREATE TABLE IF NOT EXISTS admins (
      id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),

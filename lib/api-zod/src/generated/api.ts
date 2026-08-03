@@ -503,6 +503,26 @@ export const UpdateAboutResponse = zod.object({
 
 
 /**
+ * @summary List published blog posts ordered newest first
+ */
+export const ListBlogPostsResponseItem = zod.object({
+  "id": zod.string(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "titleFr": zod.string().nullish(),
+  "body": zod.string(),
+  "excerpt": zod.string().nullish(),
+  "author": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "category": zod.string().nullish(),
+  "status": zod.string(),
+  "publishedAt": zod.string().nullish(),
+  "createdAt": zod.string().optional()
+})
+export const ListBlogPostsResponse = zod.array(ListBlogPostsResponseItem)
+
+
+/**
  * @summary Request a presigned URL for file upload
  */
 
